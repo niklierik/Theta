@@ -1,4 +1,4 @@
-﻿namespace Theta.Parser;
+﻿namespace Theta.CodeAnalysis.Syntax;
 
 using System.Collections;
 using System.Collections.Generic;

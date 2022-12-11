@@ -1,4 +1,4 @@
-﻿namespace Theta.Parser;
+﻿namespace Theta.CodeAnalysis.Syntax;
 
 public sealed class LiteralExpressionSyntax : ExpressionSyntax
 {
@@ -8,7 +8,7 @@ public sealed class LiteralExpressionSyntax : ExpressionSyntax
     }
 
     public override SyntaxType Type => SyntaxType.LiteralExpression;
-    
+
     public required SyntaxToken LiteralToken { get; init; }
 
     public override IEnumerable<SyntaxNode> Children

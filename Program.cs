@@ -2,7 +2,7 @@
 
 using System.Globalization;
 using System.Text;
-using Theta.Parser;
+using Theta.CodeAnalysis;
 using Theta.Utils;
 
 internal static class Program

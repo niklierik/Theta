@@ -1,4 +1,4 @@
-﻿namespace Theta.Parser;
+﻿namespace Theta.CodeAnalysis.Syntax;
 
 public enum SyntaxType
 {

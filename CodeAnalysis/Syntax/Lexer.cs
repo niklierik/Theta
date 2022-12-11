@@ -1,4 +1,4 @@
-﻿namespace Theta.Parser;
+﻿namespace Theta.CodeAnalysis.Syntax;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -52,7 +52,7 @@ internal sealed class Lexer : IEnumerable<SyntaxToken>
         {
             var start = _pos;
             var integer = true;
-            while (char.IsDigit(Current) || (Current == '.' && char.IsDigit(Next)))
+            while (char.IsDigit(Current) || Current == '.' && char.IsDigit(Next))
             {
                 if (Current == '.')
                 {

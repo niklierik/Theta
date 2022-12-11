@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Theta.Parser;
+using Theta.CodeAnalysis;
 
 public static class SyntaxUtils
 {
