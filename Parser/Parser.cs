@@ -3,8 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using Theta.Utils;
 
 internal sealed class Parser
 {
@@ -41,8 +43,6 @@ internal sealed class Parser
         return current;
     }
 
-
-
     private SyntaxToken Peek(int offset = 0)
     {
         var index = _position + offset;
@@ -67,6 +67,46 @@ internal sealed class Parser
     }
 
 
+    private ExpressionSyntax ParseExpression(int parentPrecedence = 0)
+    {
+        ExpressionSyntax left;
+        var unaryOperatorPrecedence = Current.Type.GetUnaryOperatorPrecedence();
+        if (unaryOperatorPrecedence > 0 && unaryOperatorPrecedence >= parentPrecedence)
+        {
+            var operatorToken = NextToken();
+            var operand = ParseExpression(unaryOperatorPrecedence);
+            left = new UnaryExpression
+            {
+                Operand = operand,
+                Operator = operatorToken,
+            };
+        }
+        else
+        {
+            left = ParsePrimaryExpression();
+        }
+        while (true)
+        {
+            var precedence = Current.Type.GetBinaryOperatorPrecedence();
+            if (precedence == 0 || precedence <= parentPrecedence)
+            {
+                break;
+            }
+            var operatorToken = NextToken();
+            var right = ParseExpression(precedence);
+            left = new BinaryExpressionSyntax()
+            {
+                Left = left,
+                Right = right,
+                Operator = operatorToken
+            };
+        }
+        return left;
+    }
+
+
+
+    /*
     private ExpressionSyntax ParseTerm()
     {
         var left = ParseFactor();
@@ -107,6 +147,7 @@ internal sealed class Parser
     {
         return ParseTerm();
     }
+    */
 
     public ExpressionSyntax ParsePrimaryExpression()
     {

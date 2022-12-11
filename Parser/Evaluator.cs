@@ -39,6 +39,32 @@ public sealed class Evaluator
         {
             return EvaluateExpression(expression.Expression);
         }
+        if (root is UnaryExpression unary)
+        {
+            try
+            {
+                var operand = EvaluateExpression(unary.Operand);
+                if (operand is null)
+                {
+                    Diagnostics.Add("ERROR: Unexpected null literal as an operand for unary expression.");
+                    return null;
+                }
+                switch(unary.Operator.Type)
+                {
+                    case SyntaxType.Plus:
+                        return +(dynamic) operand;
+                    case SyntaxType.Minus:
+                        return -(dynamic) operand;
+                    default:
+                        Diagnostics.Add($"ERROR: Unexpected binary operator: {unary.Type}.");
+                        return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                Diagnostics.Add(ex.ToString());
+            }
+        }
         if (root is BinaryExpressionSyntax binaryOperator)
         {
             try
@@ -47,12 +73,12 @@ public sealed class Evaluator
                 var right = EvaluateExpression(binaryOperator.Right);
                 if (left is null)
                 {
-                    Diagnostics.Add("Unexpected null literal at the left of binary operation.");
+                    Diagnostics.Add("ERROR: Unexpected null literal at the left of binary operation.");
                     return null;
                 }
                 if (right is null)
                 {
-                    Diagnostics.Add("Unexpected null literal at the right of binary operation.");
+                    Diagnostics.Add("ERROR: Unexpected null literal at the right of binary operation.");
                     return null;
                 }
                 switch (binaryOperator.Operator.Type)
@@ -68,15 +94,15 @@ public sealed class Evaluator
                     case SyntaxType.Percent:
                         return (dynamic) left % (dynamic) right;
                 }
-                Diagnostics.Add($"Unexpected binary operator: {binaryOperator.Type}.");
+                Diagnostics.Add($"ERROR: Unexpected binary operator: {binaryOperator.Type}.");
                 return null;
             }
             catch (Exception ex)
             {
-                Diagnostics.Add(ex.ToString());
+                Diagnostics.Add("ERROR: " + ex.ToString());
             }
         }
-        Diagnostics.Add("Cannot parse expression.");
+        Diagnostics.Add("ERROR: Cannot parse expression.");
         return null;
     }
 }

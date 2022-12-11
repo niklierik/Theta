@@ -16,4 +16,5 @@ public enum SyntaxType
     LiteralExpression,
     BinaryExpression,
     GroupExpression,
+    UnaryExpression,
 }
