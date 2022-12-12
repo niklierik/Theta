@@ -151,23 +151,41 @@ internal sealed class Parser
 
     public ExpressionSyntax ParsePrimaryExpression()
     {
-        if (Current.Type == SyntaxType.OpenBracket)
+        switch (Current.Type)
         {
-            var left = NextToken();
-            var expression = ParseExpression();
-            var right = MatchToken(SyntaxType.CloseBracket);
-            return new BracketExpression()
+            case SyntaxType.OpenGroup:
             {
-                Open = left,
-                Close = right,
-                Expression = expression
-            };
+                var left = NextToken();
+                var expression = ParseExpression();
+                var right = MatchToken(SyntaxType.CloseGroup);
+                return new BracketExpression()
+                {
+                    Open = left,
+                    Close = right,
+                    Expression = expression
+                };
+            }
+
+            case SyntaxType.TrueKeyword:
+            case SyntaxType.FalseKeyword:
+            {
+                var value = Current.Type == SyntaxType.TrueKeyword;
+                NextToken();
+                return new LiteralExpressionSyntax
+                {
+                    Value = value
+                };
+            }
+
+            case SyntaxType.NullKeyword:
+                NextToken();
+                return new LiteralExpressionSyntax { Value = null };
         }
         var literalToken = MatchToken(SyntaxType.Literal);
 
         return new LiteralExpressionSyntax()
         {
-            LiteralToken = literalToken,
+            Value = literalToken.Value,
         };
     }
 

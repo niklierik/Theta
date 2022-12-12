@@ -39,4 +39,24 @@ public static class SyntaxUtils
                 return 0;
         }
     }
+
+    public static SyntaxType GetKeywordType(string text)
+    {
+        switch (text)
+        {
+            case "true":
+                return SyntaxType.TrueKeyword;
+            case "false":
+                return SyntaxType.FalseKeyword;
+            case "null":
+                return SyntaxType.NullKeyword;
+            default:
+                return SyntaxType.IdentifierToken;
+        }
+    }
+
+    public static bool IsBoolean(this SyntaxType type)
+    {
+        return type == SyntaxType.TrueKeyword || type == SyntaxType.FalseKeyword;
+    }
 }

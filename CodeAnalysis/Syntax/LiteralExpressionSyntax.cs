@@ -9,13 +9,14 @@ public sealed class LiteralExpressionSyntax : ExpressionSyntax
 
     public override SyntaxType Type => SyntaxType.LiteralExpression;
 
-    public required SyntaxToken LiteralToken { get; init; }
+    // public required SyntaxToken LiteralToken { get; init; }
+    public required object? Value { get; set; }
 
     public override IEnumerable<SyntaxNode> Children
     {
         get
         {
-            yield return LiteralToken;
+            return Enumerable.Empty<SyntaxNode>();
         }
     }
 

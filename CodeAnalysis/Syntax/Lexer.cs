@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using Theta.Utils;
 
 internal sealed class Lexer : IEnumerable<SyntaxToken>
 {
@@ -90,6 +90,18 @@ internal sealed class Lexer : IEnumerable<SyntaxToken>
             var text = _text.Substring(start, length);
             return new SyntaxToken(SyntaxType.Whitespace) { Position = start, Text = text };
         }
+        if (char.IsLetter(Current) || Current == '_')
+        {
+            var start = _pos;
+            while (char.IsLetter(Current) || char.IsNumber(Current) || (Current is '.' or '_'))
+            {
+                _pos++;
+            }
+            var length = _pos - start;
+            var text = _text.Substring(start, length);
+            var type = SyntaxUtils.GetKeywordType(text);
+            return new SyntaxToken(type) { Position = start, Text = text };
+        }
         switch (Current)
         {
             case '+':
@@ -105,9 +117,9 @@ internal sealed class Lexer : IEnumerable<SyntaxToken>
             case '^':
                 return new SyntaxToken(SyntaxType.Hat) { Position = _pos++, Text = "^" };
             case '(':
-                return new SyntaxToken(SyntaxType.OpenBracket) { Position = _pos++, Text = "(" };
+                return new SyntaxToken(SyntaxType.OpenGroup) { Position = _pos++, Text = "(" };
             case ')':
-                return new SyntaxToken(SyntaxType.CloseBracket) { Position = _pos++, Text = ")" };
+                return new SyntaxToken(SyntaxType.CloseGroup) { Position = _pos++, Text = ")" };
         }
         Diagnostics.Add($"ERROR: Invalid character input: {Current}.");
         return new SyntaxToken(SyntaxType.Invalid) { Position = _pos++, Text = _text.Substring(_pos - 1, 1) };
