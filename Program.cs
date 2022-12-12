@@ -38,13 +38,13 @@ internal static class Program
 
     public static void Main(string[] args)
     {
-        var diagnostics = new List<string>();
         Console.InputEncoding = Console.OutputEncoding = Encoding.UTF8;
         CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
         string line = "";
         bool printTree = false;
         while (true)
         {
+            var diagnostics = new List<string>();
             " > ".Log(ConsoleColor.DarkGray, false);
 
             line = Console.ReadLine() ?? "";

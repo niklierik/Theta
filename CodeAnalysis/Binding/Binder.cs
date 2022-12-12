@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using System.Reflection.Emit;
+using System.Text.RegularExpressions;
 using Theta.CodeAnalysis.Syntax;
 
 namespace Theta.CodeAnalysis.Binding;
@@ -24,6 +25,9 @@ internal sealed class Binder
             case SyntaxType.UnaryExpression:
                 UnaryExpressionSyntax unary = (UnaryExpressionSyntax) syntax;
                 return BindUnaryExpression(unary);
+            case SyntaxType.GroupExpression:
+                BracketExpression bracketExpression = (BracketExpression) syntax;
+                return BindExpression(bracketExpression.Expression);
             default:
                 Diagnostics.Add($"ERROR: Unexpected syntax {syntax.Type}.");
                 return null;
