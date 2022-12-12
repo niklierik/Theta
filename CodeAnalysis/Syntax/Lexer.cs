@@ -102,6 +102,8 @@ internal sealed class Lexer : IEnumerable<SyntaxToken>
                 return new SyntaxToken(SyntaxType.Slash) { Position = _pos++, Text = "/" };
             case '%':
                 return new SyntaxToken(SyntaxType.Percent) { Position = _pos++, Text = "%" };
+            case '^':
+                return new SyntaxToken(SyntaxType.Hat) { Position = _pos++, Text = "^" };
             case '(':
                 return new SyntaxToken(SyntaxType.OpenBracket) { Position = _pos++, Text = "(" };
             case ')':

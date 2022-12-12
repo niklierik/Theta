@@ -75,7 +75,7 @@ internal sealed class Parser
         {
             var operatorToken = NextToken();
             var operand = ParseExpression(unaryOperatorPrecedence);
-            left = new UnaryExpression
+            left = new UnaryExpressionSyntax
             {
                 Operand = operand,
                 Operator = operatorToken,

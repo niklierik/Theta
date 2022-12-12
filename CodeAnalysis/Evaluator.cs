@@ -5,41 +5,54 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static Theta.CodeAnalysis.Parser;
+using Theta.CodeAnalysis.Binding;
+using Theta.CodeAnalysis.Syntax;
+using static Theta.CodeAnalysis.Syntax.Parser;
 
 public sealed class Evaluator
 {
 
-    private readonly SyntaxTree _tree;
+    private readonly BoundExpression _tree;
 
-    public List<string> Diagnostics { get; }
+    public List<string> Diagnostics { get; } = new();
 
-    public Evaluator(SyntaxTree tree, List<string> diagnostics)
+    public Evaluator(BoundExpression tree)
     {
         this._tree = tree;
-        this.Diagnostics = diagnostics;
     }
 
     public object? Evaluate()
     {
-        return EvaluateExpression(_tree.Root);
+        return EvaluateExpression(_tree);
+    }
+    /*
+    public string AsStringVersion()
+    {
+        return AsStringVersion(_tree.Root);
     }
 
-    private object? EvaluateExpression(SyntaxNode root)
+    public string AsStringVersion(SyntaxNode node)
     {
-        if (root is SyntaxToken token)
+        if (node is SyntaxToken token)
         {
-            return token.Value;
+            return token.Value?.ToString() ?? "null";
         }
-        if (root is LiteralExpressionSyntax literal)
+        return $"__{node.Type}__( {string.Join(", ", node.Children.Select(child => AsStringVersion(child)))} )";
+    }
+    */
+    private object? EvaluateExpression(BoundExpression root)
+    {
+        if (root is BoundLiteralExpression literal)
         {
-            return EvaluateExpression(literal.LiteralToken);
+            return literal.Value;
         }
+        /*
         if (root is BracketExpression expression)
         {
             return EvaluateExpression(expression.Expression);
         }
-        if (root is UnaryExpression unary)
+        */
+        if (root is BoundUnaryExpression unary)
         {
             try
             {
@@ -49,11 +62,11 @@ public sealed class Evaluator
                     Diagnostics.Add("ERROR: Unexpected null literal as an operand for unary expression.");
                     return null;
                 }
-                switch(unary.Operator.Type)
+                switch (unary.OperatorType)
                 {
-                    case SyntaxType.Plus:
+                    case BoundUnaryOperatorType.Plus:
                         return +(dynamic) operand;
-                    case SyntaxType.Minus:
+                    case BoundUnaryOperatorType.Minus:
                         return -(dynamic) operand;
                     default:
                         Diagnostics.Add($"ERROR: Unexpected binary operator: {unary.Type}.");
@@ -65,12 +78,12 @@ public sealed class Evaluator
                 Diagnostics.Add(ex.ToString());
             }
         }
-        if (root is BinaryExpressionSyntax binaryOperator)
+        if (root is BoundBinaryExpression binary)
         {
             try
             {
-                var left = EvaluateExpression(binaryOperator.Left);
-                var right = EvaluateExpression(binaryOperator.Right);
+                var left = EvaluateExpression(binary.Left);
+                var right = EvaluateExpression(binary.Right);
                 if (left is null)
                 {
                     Diagnostics.Add("ERROR: Unexpected null literal at the left of binary operation.");
@@ -81,20 +94,22 @@ public sealed class Evaluator
                     Diagnostics.Add("ERROR: Unexpected null literal at the right of binary operation.");
                     return null;
                 }
-                switch (binaryOperator.Operator.Type)
+                switch (binary.OperatorType)
                 {
-                    case SyntaxType.Plus:
+                    case BoundBinaryOperatorType.Add:
                         return (dynamic) left + (dynamic) right;
-                    case SyntaxType.Minus:
+                    case BoundBinaryOperatorType.Subtract:
                         return (dynamic) left - (dynamic) right;
-                    case SyntaxType.Star:
+                    case BoundBinaryOperatorType.Multiply:
                         return (dynamic) left * (dynamic) right;
-                    case SyntaxType.Slash:
+                    case BoundBinaryOperatorType.Divide:
                         return (dynamic) left / (dynamic) right;
-                    case SyntaxType.Percent:
+                    case BoundBinaryOperatorType.Modulo:
                         return (dynamic) left % (dynamic) right;
+                    case BoundBinaryOperatorType.Pow:
+                        return Math.Pow((dynamic) left, (dynamic) right);
                 }
-                Diagnostics.Add($"ERROR: Unexpected binary operator: {binaryOperator.Type}.");
+                Diagnostics.Add($"ERROR: Unexpected binary operator: {binary.Type}.");
                 return null;
             }
             catch (Exception ex)

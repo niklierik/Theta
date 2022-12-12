@@ -1,8 +1,11 @@
 ﻿namespace Theta;
 
+using System;
 using System.Globalization;
 using System.Text;
 using Theta.CodeAnalysis;
+using Theta.CodeAnalysis.Binding;
+using Theta.CodeAnalysis.Syntax;
 using Theta.Utils;
 
 internal static class Program
@@ -35,6 +38,7 @@ internal static class Program
 
     public static void Main(string[] args)
     {
+        var diagnostics = new List<string>();
         Console.InputEncoding = Console.OutputEncoding = Encoding.UTF8;
         CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
         string line = "";
@@ -61,22 +65,43 @@ internal static class Program
                 continue;
             }
             var expression = SyntaxTree.Parse(line);
+            var binder = new Binder();
+            var boundExpression = binder.BindExpression(expression?.Root as ExpressionSyntax);
+            if (expression is null)
+            {
+                ShowErrors(diagnostics);
+                continue;
+            }
+            diagnostics.AddRange(expression.Diagnostics);
+            diagnostics.AddRange(binder.Diagnostics);
             if (printTree)
             {
                 Console.ForegroundColor = ConsoleColor.DarkGray;
                 PrintTree(expression.Root);
                 Console.ResetColor();
             }
-            var eval = new Evaluator(expression, expression.Diagnostics);
-            if (eval.Diagnostics.Count > 0)
+            if (boundExpression is null)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                eval.Diagnostics.ForEach(Console.WriteLine);
-                Console.ResetColor();
+                ShowErrors(diagnostics);
+                continue;
+            }
+            var eval = new Evaluator(boundExpression);
+            diagnostics.AddRange(eval.Diagnostics);
+            if (diagnostics.Count > 0)
+            {
+                ShowErrors(diagnostics);
                 continue;
             }
             var result = eval.Evaluate();
-            result.Log(ConsoleColor.Green);
+            $"   {result}".Log(ConsoleColor.Green);
+            // $"{eval.AsStringVersion()}".Log(ConsoleColor.DarkGray);
         }
+    }
+
+    private static void ShowErrors(List<string> diagnostics)
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        diagnostics.ForEach(Console.WriteLine);
+        Console.ResetColor();
     }
 }

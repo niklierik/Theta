@@ -11,6 +11,7 @@ public enum SyntaxType
     Star,
     Slash,
     Percent,
+    Hat,
     OpenBracket,
     CloseBracket,
     LiteralExpression,

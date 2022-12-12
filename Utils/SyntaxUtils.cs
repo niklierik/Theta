@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Theta.CodeAnalysis;
+using Theta.CodeAnalysis.Syntax;
 
 public static class SyntaxUtils
 {
@@ -33,6 +33,8 @@ public static class SyntaxUtils
             case SyntaxType.Slash:
             case SyntaxType.Percent:
                 return 2;
+            case SyntaxType.Hat:
+                return 3;
             default:
                 return 0;
         }

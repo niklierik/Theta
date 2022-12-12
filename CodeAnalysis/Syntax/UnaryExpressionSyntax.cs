@@ -1,6 +1,6 @@
 ﻿namespace Theta.CodeAnalysis.Syntax;
 
-public sealed class UnaryExpression : ExpressionSyntax
+public sealed class UnaryExpressionSyntax : ExpressionSyntax
 {
 
     public required ExpressionSyntax Operand { get; init; }
