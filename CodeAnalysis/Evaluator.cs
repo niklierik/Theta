@@ -66,6 +66,8 @@ public sealed class Evaluator
                 {
                     case BoundUnaryOperatorType.Plus:
                         return +(dynamic) operand;
+                    case BoundUnaryOperatorType.Not:
+                        return !(dynamic) operand;
                     case BoundUnaryOperatorType.Minus:
                         return -(dynamic) operand;
                     default:
@@ -108,6 +110,10 @@ public sealed class Evaluator
                         return (dynamic) left % (dynamic) right;
                     case BoundBinaryOperatorType.Pow:
                         return Math.Pow((dynamic) left, (dynamic) right);
+                    case BoundBinaryOperatorType.BoolAnd:
+                        return (dynamic) left && (dynamic) right;
+                    case BoundBinaryOperatorType.BoolOr:
+                        return (dynamic) left || (dynamic) right;
                 }
                 Diagnostics.Add($"ERROR: Unexpected binary operator: {binary.Type}.");
                 return null;

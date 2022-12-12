@@ -2,17 +2,22 @@
 
 public enum SyntaxType
 {
+    // Specials
     Invalid,
     EndOfFile,
     Whitespace,
+    // Literal
     Literal,
     // Operators
-    Plus,
-    Minus,
-    Star,
-    Slash,
-    Percent,
-    Hat,
+    PlusToken,
+    MinusToken,
+    StarToken,
+    SlashToken,
+    PercentToken,
+    HatToken,
+    BangToken,
+    AmpersandAmpersandToken,
+    PipePipeToken,
     // Brackets
     OpenGroup,
     CloseGroup,

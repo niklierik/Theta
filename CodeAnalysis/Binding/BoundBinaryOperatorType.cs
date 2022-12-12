@@ -8,4 +8,6 @@ internal enum BoundBinaryOperatorType
     Divide,
     Modulo,
     Pow,
+    BoolAnd,
+    BoolOr,
 }

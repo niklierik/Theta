@@ -30,6 +30,23 @@ internal sealed class Lexer : IEnumerable<SyntaxToken>
     public char Current => CharAt(_pos);
     public char Next => CharAt(_pos + 1);
 
+    public char Peek(int pos = 0)
+    {
+        return CharAt(_pos + pos);
+    }
+
+    public bool Match(string text)
+    {
+        string substr = "";
+        try
+        {
+            substr = _text.Substring(_pos, text.Length);
+        }
+        catch { }
+        return substr == text;
+    }
+
+
     public Lexer(string text)
     {
         _text = text;
@@ -105,21 +122,35 @@ internal sealed class Lexer : IEnumerable<SyntaxToken>
         switch (Current)
         {
             case '+':
-                return new SyntaxToken(SyntaxType.Plus) { Position = _pos++, Text = "+" };
+                return new SyntaxToken(SyntaxType.PlusToken) { Position = _pos++, Text = "+" };
             case '-':
-                return new SyntaxToken(SyntaxType.Minus) { Position = _pos++, Text = "-" };
+                return new SyntaxToken(SyntaxType.MinusToken) { Position = _pos++, Text = "-" };
             case '*':
-                return new SyntaxToken(SyntaxType.Star) { Position = _pos++, Text = "*" };
+                return new SyntaxToken(SyntaxType.StarToken) { Position = _pos++, Text = "*" };
             case '/':
-                return new SyntaxToken(SyntaxType.Slash) { Position = _pos++, Text = "/" };
+                return new SyntaxToken(SyntaxType.SlashToken) { Position = _pos++, Text = "/" };
             case '%':
-                return new SyntaxToken(SyntaxType.Percent) { Position = _pos++, Text = "%" };
+                return new SyntaxToken(SyntaxType.PercentToken) { Position = _pos++, Text = "%" };
             case '^':
-                return new SyntaxToken(SyntaxType.Hat) { Position = _pos++, Text = "^" };
+                return new SyntaxToken(SyntaxType.HatToken) { Position = _pos++, Text = "^" };
             case '(':
                 return new SyntaxToken(SyntaxType.OpenGroup) { Position = _pos++, Text = "(" };
             case ')':
                 return new SyntaxToken(SyntaxType.CloseGroup) { Position = _pos++, Text = ")" };
+            case '!':
+                return new SyntaxToken(SyntaxType.BangToken) { Position = _pos++, Text = "!" };
+            case '&':
+                if (Next == '&')
+                {
+                    return new SyntaxToken(SyntaxType.AmpersandAmpersandToken) { Position = _pos += 2, Text = "&&" };
+                }
+                break;
+            case '|':
+                if (Next == '|')
+                {
+                    return new SyntaxToken(SyntaxType.PipePipeToken) { Position = _pos += 2, Text = "||" };
+                }
+                break;
         }
         Diagnostics.Add($"ERROR: Invalid character input: {Current}.");
         return new SyntaxToken(SyntaxType.Invalid) { Position = _pos++, Text = _text.Substring(_pos - 1, 1) };

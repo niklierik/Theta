@@ -3,5 +3,6 @@
 internal enum BoundUnaryOperatorType
 {
     Plus,
-    Minus
+    Minus,
+    Not
 }

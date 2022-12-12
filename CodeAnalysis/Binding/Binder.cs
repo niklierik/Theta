@@ -54,7 +54,7 @@ internal sealed class Binder
             Diagnostics.Add($"ERROR: Cannot bind binary expression.");
             return null;
         }
-        var _type = BindBinaryType(binary.Operator.Type, left.Type, right.Type);
+        var _type = BoundBinaryExpression.BindBinaryType(binary.Operator.Type, left.Type, right.Type, Diagnostics);
         if (!_type.HasValue)
         {
             Diagnostics.Add($"ERROR: Cannot bind binary expression.");
@@ -72,7 +72,7 @@ internal sealed class Binder
             Diagnostics.Add($"ERROR: Cannot bind unary expression.");
             return null;
         }
-        var _type = BindUnaryType(unary.Operator.Type, boundOperand.Type);
+        var _type = BoundUnaryExpression.BindUnaryType(unary.Operator.Type, boundOperand.Type, Diagnostics);
         if (!_type.HasValue)
         {
             Diagnostics.Add($"ERROR: Cannot bind unary expression.");
@@ -82,43 +82,7 @@ internal sealed class Binder
         return new BoundUnaryExpression(boundOperand, type);
     }
 
-    private BoundUnaryOperatorType? BindUnaryType(SyntaxType type, Type operandType)
-    {
-        if ((typeof(double) == operandType || typeof(long) == operandType))
-        {
-            switch (type)
-            {
-                case SyntaxType.Plus:
-                    return BoundUnaryOperatorType.Plus;
-                case SyntaxType.Minus:
-                    return BoundUnaryOperatorType.Minus;
-            }
-        }
-        Diagnostics.Add($"ERROR: Invalid unary operator type {type} for operand {operandType}.");
-        return null;
-    }
+    
 
-    private BoundBinaryOperatorType? BindBinaryType(SyntaxType type, Type leftOperandType, Type rightOperandType)
-    {
-        if ((typeof(double) == leftOperandType || typeof(long) == leftOperandType) && (typeof(double) == rightOperandType || typeof(long) == rightOperandType))
-        {
-            switch (type)
-            {
-                case SyntaxType.Plus:
-                    return BoundBinaryOperatorType.Add;
-                case SyntaxType.Minus:
-                    return BoundBinaryOperatorType.Subtract;
-                case SyntaxType.Star:
-                    return BoundBinaryOperatorType.Multiply;
-                case SyntaxType.Slash:
-                    return BoundBinaryOperatorType.Divide;
-                case SyntaxType.Percent:
-                    return BoundBinaryOperatorType.Modulo;
-                case SyntaxType.Hat:
-                    return BoundBinaryOperatorType.Pow;
-            }
-        }
-        Diagnostics.Add($"ERROR: Invalid binary operator type {type} for operands {leftOperandType} and {rightOperandType}.");
-        return null;
-    }
+    
 }
