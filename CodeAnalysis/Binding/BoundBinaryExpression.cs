@@ -2,18 +2,19 @@
 
 namespace Theta.CodeAnalysis.Binding;
 
-internal sealed class BoundBinaryExpression : BoundExpression
+public sealed class BoundBinaryExpression : BoundExpression
 {
-    public BoundBinaryExpression(BoundExpression left, BoundBinaryOperatorType operatorType, BoundExpression right)
+    
+    public BoundBinaryExpression(BoundExpression left, BoundBinaryOperator op, BoundExpression right)
     {
         Left = left;
-        OperatorType = operatorType;
+        Operator = op;
         Right = right;
     }
 
     public BoundExpression Left { get; }
     public BoundExpression Right { get; }
-    public BoundBinaryOperatorType OperatorType { get; }
+    public BoundBinaryOperator Operator { get; }
 
     public override Type Type => Left.Type;
 

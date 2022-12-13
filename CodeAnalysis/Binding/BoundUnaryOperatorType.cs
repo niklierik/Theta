@@ -1,6 +1,6 @@
 ﻿namespace Theta.CodeAnalysis.Binding;
 
-internal enum BoundUnaryOperatorType
+public enum BoundUnaryOperatorType
 {
     Plus,
     Minus,

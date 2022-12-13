@@ -1,6 +1,6 @@
 ﻿namespace Theta.CodeAnalysis.Binding;
 
-internal enum BoundBinaryOperatorType
+public enum BoundBinaryOperatorType
 {
     Add,
     Subtract,

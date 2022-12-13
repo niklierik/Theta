@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Theta.Utils;
 
-internal sealed class Lexer : IEnumerable<SyntaxToken>
+public sealed class Lexer : IEnumerable<SyntaxToken>
 {
     private readonly string _text;
     private int _pos;
@@ -69,7 +69,7 @@ internal sealed class Lexer : IEnumerable<SyntaxToken>
         {
             var start = _pos;
             var integer = true;
-            while (char.IsDigit(Current) || Current == '.' && char.IsDigit(Next))
+            while (char.IsDigit(Current) || ((Current is '.' or '_') && char.IsDigit(Next)))
             {
                 if (Current == '.')
                 {
@@ -81,7 +81,7 @@ internal sealed class Lexer : IEnumerable<SyntaxToken>
             var text = _text.Substring(start, length);
             if (integer)
             {
-                if (!long.TryParse(text, out var res))
+                if (!long.TryParse(text.Replace("_", ""), out var res))
                 {
                     Diagnostics.Add($"ERROR: {text} cannot be interpreted as an integer.");
                 }
@@ -89,7 +89,7 @@ internal sealed class Lexer : IEnumerable<SyntaxToken>
             }
             else
             {
-                if (!double.TryParse(text, out var res))
+                if (!double.TryParse(text.Replace("_", ""), out var res))
                 {
                     Diagnostics.Add($"ERROR: {text} cannot be interpreted as a floating number.");
                 }

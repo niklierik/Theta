@@ -5,7 +5,7 @@ using Theta.CodeAnalysis.Syntax;
 
 namespace Theta.CodeAnalysis.Binding;
 
-internal sealed class Binder
+public sealed class Binder
 {
     public List<string> Diagnostics { get; private set; } = new();
 
@@ -54,14 +54,13 @@ internal sealed class Binder
             Diagnostics.Add($"ERROR: Cannot bind binary expression.");
             return null;
         }
-        var _type = BoundBinaryExpression.BindBinaryType(binary.Operator.Type, left.Type, right.Type, Diagnostics);
-        if (!_type.HasValue)
+        var op = BoundBinaryOperator.Bind(binary.Operator.Type, left.Type, right.Type);
+        if (op is null)
         {
-            Diagnostics.Add($"ERROR: Cannot bind binary expression.");
+            Diagnostics.Add($"ERROR: Binary expression does not exist for {binary.Operator.Type} with operands {left.Type} and {right.Type}.");
             return null;
         }
-        var type = _type.Value;
-        return new BoundBinaryExpression(left, type, right);
+        return new BoundBinaryExpression(left, op, right);
     }
 
     private BoundExpression? BindUnaryExpression(UnaryExpressionSyntax unary)
@@ -72,17 +71,16 @@ internal sealed class Binder
             Diagnostics.Add($"ERROR: Cannot bind unary expression.");
             return null;
         }
-        var _type = BoundUnaryExpression.BindUnaryType(unary.Operator.Type, boundOperand.Type, Diagnostics);
-        if (!_type.HasValue)
+        var op = BoundUnaryOperator.Bind(unary.Operator.Type, boundOperand.Type);
+        if (op is null)
         {
-            Diagnostics.Add($"ERROR: Cannot bind unary expression.");
+            Diagnostics.Add($"ERROR: Unary operator does not exist for {unary.Operator.Type} with operand type {boundOperand.Type}.");
             return null;
         }
-        var type = _type.Value;
-        return new BoundUnaryExpression(boundOperand, type);
+        return new BoundUnaryExpression(boundOperand, op);
     }
 
-    
 
-    
+
+
 }

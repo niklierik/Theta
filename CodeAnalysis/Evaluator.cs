@@ -62,7 +62,7 @@ public sealed class Evaluator
                     Diagnostics.Add("ERROR: Unexpected null literal as an operand for unary expression.");
                     return null;
                 }
-                switch (unary.OperatorType)
+                switch (unary.Operator.Type)
                 {
                     case BoundUnaryOperatorType.Plus:
                         return +(dynamic) operand;
@@ -96,7 +96,7 @@ public sealed class Evaluator
                     Diagnostics.Add("ERROR: Unexpected null literal at the right of binary operation.");
                     return null;
                 }
-                switch (binary.OperatorType)
+                switch (binary.Operator.Type)
                 {
                     case BoundBinaryOperatorType.Add:
                         return (dynamic) left + (dynamic) right;

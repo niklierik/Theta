@@ -3,12 +3,12 @@
 using System;
 using Theta.CodeAnalysis.Syntax;
 
-internal sealed class BoundUnaryExpression : BoundExpression
+public sealed class BoundUnaryExpression : BoundExpression
 {
-    public BoundUnaryExpression(BoundExpression operand, BoundUnaryOperatorType operatorType)
+    public BoundUnaryExpression(BoundExpression operand, BoundUnaryOperator op)
     {
         Operand = operand;
-        OperatorType = operatorType;
+        Operator = op;
     }
 
     public override Type Type => Operand.Type;
@@ -16,7 +16,7 @@ internal sealed class BoundUnaryExpression : BoundExpression
     public override BoundNodeType NodeType => BoundNodeType.UnaryExpression;
 
     public BoundExpression Operand { get; }
-    public BoundUnaryOperatorType OperatorType { get; }
+    public BoundUnaryOperator Operator { get; }
 
     public static BoundUnaryOperatorType? BindUnaryType(SyntaxType type, Type operandType, List<string> diagnostics)
     {
