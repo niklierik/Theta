@@ -10,4 +10,13 @@ public enum BoundBinaryOperatorType
     Pow,
     BoolAnd,
     BoolOr,
+    Equality,
+    RefEquality,
+    RefInequality,
+    Inequality,
+    Comparsion,
+    LessOrEquals,
+    Less,
+    GreaterOrEquals,
+    Greater,
 }

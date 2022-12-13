@@ -31,4 +31,13 @@ public enum SyntaxType
     FalseKeyword,
     NullKeyword,
     IdentifierToken,
+    DoubleEqualsToken,
+    BangEqualsToken,
+    TripleEqualsToken,
+    BangDoubleEqualsToken,
+    LessEqualsGreaterToken,
+    GreaterOrEqualsToken,
+    LessOrEqualsToken,
+    LessToken,
+    GreaterToken,
 }

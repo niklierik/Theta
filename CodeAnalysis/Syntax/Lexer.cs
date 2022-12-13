@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Theta.Utils;
+using Theta.CodeAnalysis.Utils;
 
 public sealed class Lexer : IEnumerable<SyntaxToken>
 {
@@ -119,6 +119,42 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
             var type = SyntaxUtils.GetKeywordType(text);
             return new SyntaxToken(type) { Position = start, Text = text };
         }
+        if (Match("&&"))
+        {
+            return new SyntaxToken(SyntaxType.AmpersandAmpersandToken) { Position = _pos += 2, Text = "&&" };
+        }
+        if (Match("||"))
+        {
+            return new SyntaxToken(SyntaxType.PipePipeToken) { Position = _pos += 2, Text = "||" };
+        }
+        if (Match("<=>"))
+        {
+            return new SyntaxToken(SyntaxType.LessEqualsGreaterToken) { Position = _pos += 3, Text = "<=>" };
+        }
+        if (Match(">="))
+        {
+            return new SyntaxToken(SyntaxType.GreaterOrEqualsToken) { Position = _pos += 2, Text = ">=" };
+        }
+        if (Match("<="))
+        {
+            return new SyntaxToken(SyntaxType.LessOrEqualsToken) { Position = _pos += 2, Text = "<=" };
+        }
+        if (Match("==="))
+        {
+            return new SyntaxToken(SyntaxType.TripleEqualsToken) { Position = _pos += 3, Text = "===" };
+        }
+        if (Match("!=="))
+        {
+            return new SyntaxToken(SyntaxType.BangDoubleEqualsToken) { Position = _pos += 3, Text = "!==" };
+        }
+        if (Match("=="))
+        {
+            return new SyntaxToken(SyntaxType.DoubleEqualsToken) { Position = _pos += 2, Text = "==" };
+        }
+        if (Match("!="))
+        {
+            return new SyntaxToken(SyntaxType.BangEqualsToken) { Position = _pos += 2, Text = "!=" };
+        }
         switch (Current)
         {
             case '+':
@@ -139,18 +175,24 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
                 return new SyntaxToken(SyntaxType.CloseGroup) { Position = _pos++, Text = ")" };
             case '!':
                 return new SyntaxToken(SyntaxType.BangToken) { Position = _pos++, Text = "!" };
-            case '&':
-                if (Next == '&')
-                {
-                    return new SyntaxToken(SyntaxType.AmpersandAmpersandToken) { Position = _pos += 2, Text = "&&" };
-                }
-                break;
-            case '|':
-                if (Next == '|')
-                {
-                    return new SyntaxToken(SyntaxType.PipePipeToken) { Position = _pos += 2, Text = "||" };
-                }
-                break;
+            case '<':
+                return new SyntaxToken(SyntaxType.LessToken) { Position = _pos++, Text = "<" };
+            case '>':
+                return new SyntaxToken(SyntaxType.GreaterToken) { Position = _pos++, Text = ">" };
+                /*
+                case '&':
+                    if (Next == '&')
+                    {
+                        return new SyntaxToken(SyntaxType.AmpersandAmpersandToken) { Position = _pos += 2, Text = "&&" };
+                    }
+                    break;
+                case '|':
+                    if (Next == '|')
+                    {
+                        return new SyntaxToken(SyntaxType.PipePipeToken) { Position = _pos += 2, Text = "||" };
+                    }
+                    break;
+                */
         }
         Diagnostics.Add($"ERROR: Invalid character input: {Current}.");
         return new SyntaxToken(SyntaxType.Invalid) { Position = _pos++, Text = _text.Substring(_pos - 1, 1) };

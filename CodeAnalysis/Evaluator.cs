@@ -71,7 +71,7 @@ public sealed class Evaluator
                     case BoundUnaryOperatorType.Minus:
                         return -(dynamic) operand;
                     default:
-                        Diagnostics.Add($"ERROR: Unexpected binary operator: {unary.Type}.");
+                        Diagnostics.Add($"ERROR: Unary operator {unary.Operator.Type} has undefined behaviour.");
                         return null;
                 }
             }
@@ -86,16 +86,9 @@ public sealed class Evaluator
             {
                 var left = EvaluateExpression(binary.Left);
                 var right = EvaluateExpression(binary.Right);
-                if (left is null)
-                {
-                    Diagnostics.Add("ERROR: Unexpected null literal at the left of binary operation.");
-                    return null;
-                }
-                if (right is null)
-                {
-                    Diagnostics.Add("ERROR: Unexpected null literal at the right of binary operation.");
-                    return null;
-                }
+
+                // Binder makes sure if it is a null literal, then we will not get to this point if we aren't supposed to.
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
                 switch (binary.Operator.Type)
                 {
                     case BoundBinaryOperatorType.Add:
@@ -114,8 +107,42 @@ public sealed class Evaluator
                         return (dynamic) left && (dynamic) right;
                     case BoundBinaryOperatorType.BoolOr:
                         return (dynamic) left || (dynamic) right;
+                    case BoundBinaryOperatorType.Equality:
+                        return object.Equals(left, right);
+                    case BoundBinaryOperatorType.Inequality:
+                        return !object.Equals(left, right);
+                    case BoundBinaryOperatorType.RefEquality:
+                        return object.ReferenceEquals(left, right);
+                    case BoundBinaryOperatorType.RefInequality:
+                        return !object.ReferenceEquals(left, right);
+                    case BoundBinaryOperatorType.Less:
+                        return (dynamic) left < (dynamic) right;
+                    case BoundBinaryOperatorType.Greater:
+                        return (dynamic) left > (dynamic) right;
+                    case BoundBinaryOperatorType.LessOrEquals:
+                        return (dynamic) left <= (dynamic) right;
+                    case BoundBinaryOperatorType.GreaterOrEquals:
+                        return (dynamic) left >= (dynamic) right;
+                    case BoundBinaryOperatorType.Comparsion:
+                        if (object.Equals(left, right))
+                        {
+                            return 0;
+                        }
+                        try
+                        {
+                            if ((dynamic) left < (dynamic) right)
+                            {
+                                return -1;
+                            }
+                            return 1;
+                        }
+                        catch
+                        {
+                            return 1;
+                        }
                 }
-                Diagnostics.Add($"ERROR: Unexpected binary operator: {binary.Type}.");
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+                Diagnostics.Add($"ERROR: Binary operator {binary.Operator.Type} has undefined behaviour.");
                 return null;
             }
             catch (Exception ex)

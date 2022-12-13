@@ -1,4 +1,4 @@
-﻿namespace Theta.Utils;
+﻿namespace Theta.CodeAnalysis.Utils;
 
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using Theta.CodeAnalysis.Syntax;
 public static class SyntaxUtils
 {
 
-    public const int Strongest = 10;
+    public const int Strongest = 100;
 
     public static int GetUnaryOperatorPrecedence(this SyntaxType type)
     {
@@ -30,6 +30,20 @@ public static class SyntaxUtils
     {
         switch (type)
         {
+            case SyntaxType.AmpersandAmpersandToken:
+            case SyntaxType.PipePipeToken:
+                return Strongest - 8;
+            case SyntaxType.DoubleEqualsToken:
+            case SyntaxType.BangEqualsToken:
+            case SyntaxType.TripleEqualsToken:
+            case SyntaxType.BangDoubleEqualsToken:
+                return Strongest - 7;
+            case SyntaxType.GreaterOrEqualsToken:
+            case SyntaxType.LessOrEqualsToken:
+            case SyntaxType.GreaterToken:
+            case SyntaxType.LessToken:
+            case SyntaxType.LessEqualsGreaterToken:
+                return Strongest - 6;
             case SyntaxType.PlusToken:
             case SyntaxType.MinusToken:
                 return Strongest - 5;
@@ -39,9 +53,6 @@ public static class SyntaxUtils
                 return Strongest - 4;
             case SyntaxType.HatToken:
                 return Strongest - 3;
-            case SyntaxType.AmpersandAmpersandToken:
-            case SyntaxType.PipePipeToken:
-                return Strongest - 2;
             default:
                 return 0;
         }

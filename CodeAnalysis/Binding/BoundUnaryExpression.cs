@@ -11,34 +11,11 @@ public sealed class BoundUnaryExpression : BoundExpression
         Operator = op;
     }
 
-    public override Type Type => Operand.Type;
+    public override Type Type => Operator.ResultType;
 
     public override BoundNodeType NodeType => BoundNodeType.UnaryExpression;
 
     public BoundExpression Operand { get; }
     public BoundUnaryOperator Operator { get; }
 
-    public static BoundUnaryOperatorType? BindUnaryType(SyntaxType type, Type operandType, List<string> diagnostics)
-    {
-        if ((typeof(double) == operandType || typeof(long) == operandType))
-        {
-            switch (type)
-            {
-                case SyntaxType.PlusToken:
-                    return BoundUnaryOperatorType.Plus;
-                case SyntaxType.MinusToken:
-                    return BoundUnaryOperatorType.Minus;
-            }
-        }
-        if (typeof(bool) == operandType)
-        {
-            switch (type)
-            {
-                case SyntaxType.BangToken:
-                    return BoundUnaryOperatorType.Not;
-            }
-        }
-        diagnostics.Add($"ERROR: Invalid unary operator type {type} for operand {operandType}.");
-        return null;
-    }
 }

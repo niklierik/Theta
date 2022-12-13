@@ -35,7 +35,7 @@ public sealed class BoundUnaryOperator
     {
         foreach (var op in UnaryOperators)
         {
-            if (op.SyntaxType == syntaxType && operand == op.OperandType)
+            if (op.SyntaxType == syntaxType && op.OperandType.IsAssignableFrom(operand))
             {
                 return op;
             }

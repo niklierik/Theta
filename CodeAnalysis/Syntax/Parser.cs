@@ -6,7 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
-using Theta.Utils;
+using Theta.CodeAnalysis.Utils;
 
 internal sealed class Parser
 {

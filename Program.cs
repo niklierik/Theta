@@ -6,7 +6,7 @@ using System.Text;
 using Theta.CodeAnalysis;
 using Theta.CodeAnalysis.Binding;
 using Theta.CodeAnalysis.Syntax;
-using Theta.Utils;
+using Theta.CodeAnalysis.Utils;
 
 internal static class Program
 {
@@ -86,13 +86,13 @@ internal static class Program
                 continue;
             }
             var eval = new Evaluator(boundExpression);
+            var result = eval.Evaluate();
             diagnostics.AddRange(eval.Diagnostics);
             if (diagnostics.Count > 0)
             {
                 ShowErrors(diagnostics);
                 continue;
             }
-            var result = eval.Evaluate();
             $"   {result}".Log(ConsoleColor.Green);
             // $"{eval.AsStringVersion()}".Log(ConsoleColor.DarkGray);
         }

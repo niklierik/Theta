@@ -20,7 +20,16 @@ public sealed class BoundBinaryOperator
         new(SyntaxType.HatToken,BoundBinaryOperatorType.Pow,typeof(long)),
         new(SyntaxType.AmpersandAmpersandToken,BoundBinaryOperatorType.BoolAnd,typeof(bool)),
         new(SyntaxType.PipePipeToken,BoundBinaryOperatorType.BoolOr,typeof(bool)),
-        
+        new(SyntaxType.DoubleEqualsToken,BoundBinaryOperatorType.Equality,typeof(object),typeof(bool)),
+        new(SyntaxType.TripleEqualsToken,BoundBinaryOperatorType.RefEquality,typeof(object),typeof(bool)),
+        new(SyntaxType.BangEqualsToken,BoundBinaryOperatorType.Inequality,typeof(object),typeof(bool)),
+        new(SyntaxType.BangDoubleEqualsToken,BoundBinaryOperatorType.RefInequality,typeof(object),typeof(bool)),
+        new(SyntaxType.GreaterToken,BoundBinaryOperatorType.Greater,typeof(IComparable),typeof(bool)),
+        new(SyntaxType.GreaterOrEqualsToken,BoundBinaryOperatorType.GreaterOrEquals,typeof(IComparable),typeof(bool)),
+        new(SyntaxType.LessToken,BoundBinaryOperatorType.Less,typeof(IComparable),typeof(bool)),
+        new(SyntaxType.LessOrEqualsToken,BoundBinaryOperatorType.LessOrEquals,typeof(IComparable),typeof(bool)),
+        new(SyntaxType.LessEqualsGreaterToken,BoundBinaryOperatorType.Comparsion,typeof(IComparable),typeof(long)),
+
     };
 
     public BoundBinaryOperatorType Type { get; }
@@ -50,7 +59,7 @@ public sealed class BoundBinaryOperator
     {
         foreach (var op in BinaryOperators)
         {
-            if (op.SyntaxType == syntaxType && left == op.LeftOperandType && right == op.RightOperandType)
+            if (op.SyntaxType == syntaxType && op.RightOperandType.IsAssignableFrom(right) && op.LeftOperandType.IsAssignableFrom(left))
             {
                 return op;
             }
