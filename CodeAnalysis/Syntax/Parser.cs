@@ -1,10 +1,12 @@
-﻿namespace Theta.Parser;
+﻿namespace Theta.CodeAnalysis.Syntax;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using Theta.CodeAnalysis.Utils;
 
 internal sealed class Parser
 {
@@ -41,8 +43,6 @@ internal sealed class Parser
         return current;
     }
 
-
-
     private SyntaxToken Peek(int offset = 0)
     {
         var index = _position + offset;
@@ -67,6 +67,46 @@ internal sealed class Parser
     }
 
 
+    private ExpressionSyntax ParseExpression(int parentPrecedence = 0)
+    {
+        ExpressionSyntax left;
+        var unaryOperatorPrecedence = Current.Type.GetUnaryOperatorPrecedence();
+        if (unaryOperatorPrecedence > 0 && unaryOperatorPrecedence >= parentPrecedence)
+        {
+            var operatorToken = NextToken();
+            var operand = ParseExpression(unaryOperatorPrecedence);
+            left = new UnaryExpressionSyntax
+            {
+                Operand = operand,
+                Operator = operatorToken,
+            };
+        }
+        else
+        {
+            left = ParsePrimaryExpression();
+        }
+        while (true)
+        {
+            var precedence = Current.Type.GetBinaryOperatorPrecedence();
+            if (precedence == 0 || precedence <= parentPrecedence)
+            {
+                break;
+            }
+            var operatorToken = NextToken();
+            var right = ParseExpression(precedence);
+            left = new BinaryExpressionSyntax()
+            {
+                Left = left,
+                Right = right,
+                Operator = operatorToken
+            };
+        }
+        return left;
+    }
+
+
+
+    /*
     private ExpressionSyntax ParseTerm()
     {
         var left = ParseFactor();
@@ -107,26 +147,45 @@ internal sealed class Parser
     {
         return ParseTerm();
     }
+    */
 
     public ExpressionSyntax ParsePrimaryExpression()
     {
-        if (Current.Type == SyntaxType.OpenBracket)
+        switch (Current.Type)
         {
-            var left = NextToken();
-            var expression = ParseExpression();
-            var right = MatchToken(SyntaxType.CloseBracket);
-            return new BracketExpression()
+            case SyntaxType.OpenGroup:
             {
-                Open = left,
-                Close = right,
-                Expression = expression
-            };
+                var left = NextToken();
+                var expression = ParseExpression();
+                var right = MatchToken(SyntaxType.CloseGroup);
+                return new BracketExpression()
+                {
+                    Open = left,
+                    Close = right,
+                    Expression = expression
+                };
+            }
+
+            case SyntaxType.TrueKeyword:
+            case SyntaxType.FalseKeyword:
+            {
+                var value = Current.Type == SyntaxType.TrueKeyword;
+                NextToken();
+                return new LiteralExpressionSyntax
+                {
+                    Value = value
+                };
+            }
+
+            case SyntaxType.NullKeyword:
+                NextToken();
+                return new LiteralExpressionSyntax { Value = null };
         }
         var literalToken = MatchToken(SyntaxType.Literal);
 
         return new LiteralExpressionSyntax()
         {
-            LiteralToken = literalToken,
+            Value = literalToken.Value,
         };
     }
 
