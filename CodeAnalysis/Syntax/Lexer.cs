@@ -5,13 +5,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Theta.CodeAnalysis.Utils;
+using Theta.CodeAnalysis.Diagnostics;
+using Theta.CodeAnalysis;
 
 public sealed class Lexer : IEnumerable<SyntaxToken>
 {
     private readonly string _text;
     private int _pos;
-    public List<string> Diagnostics { get; private set; } = new();
+    public DiagnosticBag Diagnostics { get; private set; } = new();
 
     public char CharAt(int pos)
     {
@@ -83,7 +84,7 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
             {
                 if (!long.TryParse(text.Replace("_", ""), out var res))
                 {
-                    Diagnostics.Add($"ERROR: {text} cannot be interpreted as an integer.");
+                    Diagnostics.ReportInvalidInt64(text, new(start, length));
                 }
                 return new SyntaxToken(SyntaxType.Literal) { Position = start, Text = text, Value = res };
             }
@@ -91,7 +92,7 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
             {
                 if (!double.TryParse(text.Replace("_", ""), out var res))
                 {
-                    Diagnostics.Add($"ERROR: {text} cannot be interpreted as a floating number.");
+                    Diagnostics.ReportInvalidDouble(text, new(start, length));
                 }
                 return new SyntaxToken(SyntaxType.Literal) { Position = start, Text = text, Value = res };
             }
@@ -119,41 +120,51 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
             var type = SyntaxUtils.GetKeywordType(text);
             return new SyntaxToken(type) { Position = start, Text = text };
         }
+        var ogpos = _pos;
         if (Match("&&"))
         {
-            return new SyntaxToken(SyntaxType.AmpersandAmpersandToken) { Position = _pos += 2, Text = "&&" };
+            _pos += 2;
+            return new SyntaxToken(SyntaxType.AmpersandAmpersandToken) { Position = ogpos, Text = "&&" };
         }
         if (Match("||"))
         {
-            return new SyntaxToken(SyntaxType.PipePipeToken) { Position = _pos += 2, Text = "||" };
+            _pos += 2;
+            return new SyntaxToken(SyntaxType.PipePipeToken) { Position = ogpos, Text = "||" };
         }
         if (Match("<=>"))
         {
-            return new SyntaxToken(SyntaxType.LessEqualsGreaterToken) { Position = _pos += 3, Text = "<=>" };
+            _pos += 3;
+            return new SyntaxToken(SyntaxType.LessEqualsGreaterToken) { Position = ogpos, Text = "<=>" };
         }
         if (Match(">="))
         {
-            return new SyntaxToken(SyntaxType.GreaterOrEqualsToken) { Position = _pos += 2, Text = ">=" };
+            _pos += 2;
+            return new SyntaxToken(SyntaxType.GreaterOrEqualsToken) { Position = ogpos, Text = ">=" };
         }
         if (Match("<="))
         {
-            return new SyntaxToken(SyntaxType.LessOrEqualsToken) { Position = _pos += 2, Text = "<=" };
+            _pos += 2;
+            return new SyntaxToken(SyntaxType.LessOrEqualsToken) { Position = ogpos, Text = "<=" };
         }
         if (Match("==="))
         {
-            return new SyntaxToken(SyntaxType.TripleEqualsToken) { Position = _pos += 3, Text = "===" };
+            _pos += 3;
+            return new SyntaxToken(SyntaxType.TripleEqualsToken) { Position = ogpos, Text = "===" };
         }
         if (Match("!=="))
         {
-            return new SyntaxToken(SyntaxType.BangDoubleEqualsToken) { Position = _pos += 3, Text = "!==" };
+            _pos += 3;
+            return new SyntaxToken(SyntaxType.BangDoubleEqualsToken) { Position = ogpos, Text = "!==" };
         }
         if (Match("=="))
         {
-            return new SyntaxToken(SyntaxType.DoubleEqualsToken) { Position = _pos += 2, Text = "==" };
+            _pos += 2;
+            return new SyntaxToken(SyntaxType.DoubleEqualsToken) { Position = ogpos, Text = "==" };
         }
         if (Match("!="))
         {
-            return new SyntaxToken(SyntaxType.BangEqualsToken) { Position = _pos += 2, Text = "!=" };
+            _pos += 2;
+            return new SyntaxToken(SyntaxType.BangEqualsToken) { Position = ogpos, Text = "!=" };
         }
         switch (Current)
         {
@@ -179,6 +190,8 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
                 return new SyntaxToken(SyntaxType.LessToken) { Position = _pos++, Text = "<" };
             case '>':
                 return new SyntaxToken(SyntaxType.GreaterToken) { Position = _pos++, Text = ">" };
+            case '=':
+                return new SyntaxToken(SyntaxType.EqualsToken) { Position = _pos++, Text = "=" };
                 /*
                 case '&':
                     if (Next == '&')
@@ -194,7 +207,7 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
                     break;
                 */
         }
-        Diagnostics.Add($"ERROR: Invalid character input: {Current}.");
+        Diagnostics.ReportInvalidCharacter(Current, _pos);
         return new SyntaxToken(SyntaxType.Invalid) { Position = _pos++, Text = _text.Substring(_pos - 1, 1) };
     }
 

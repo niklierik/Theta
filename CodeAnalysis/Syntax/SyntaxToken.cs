@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Theta.CodeAnalysis.Diagnostics;
 
 public sealed class SyntaxToken : SyntaxNode
 {
@@ -25,4 +26,5 @@ public sealed class SyntaxToken : SyntaxNode
 
     public override IEnumerable<SyntaxNode> Children => Enumerable.Empty<SyntaxNode>();
 
+    public TextSpan Span => new(Position, Text.Length);
 }

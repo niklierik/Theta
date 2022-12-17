@@ -3,51 +3,28 @@
 using System;
 using System.Globalization;
 using System.Text;
-using Theta.CodeAnalysis;
 using Theta.CodeAnalysis.Binding;
+using Theta.CodeAnalysis.Diagnostics;
+using Theta.CodeAnalysis.Evaluation;
 using Theta.CodeAnalysis.Syntax;
-using Theta.CodeAnalysis.Utils;
+using Theta.CodeAnalysis;
 
 internal static class Program
 {
-    public static void PrintTree(SyntaxNode node, string indent = "", bool isLast = true)
-    {
-        var marker = isLast ? "└──" : "├──";
 
-        Console.Write(indent);
-        Console.Write(marker);
-        Console.Write(node.Type);
-
-        if (node is SyntaxToken t && t.Value != null)
-        {
-            Console.Write(" ");
-            Console.Write(t.Value);
-        }
-
-        Console.WriteLine();
-
-        indent += isLast ? "   " : "│   ";
-
-        var lastChild = node.Children.LastOrDefault();
-
-        foreach (var child in node.Children)
-        {
-            PrintTree(child, indent, child == lastChild);
-        }
-    }
 
     public static void Main(string[] args)
     {
         Console.InputEncoding = Console.OutputEncoding = Encoding.UTF8;
         CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
-        string line = "";
         bool printTree = false;
+        var vars = new Dictionary<VariableSymbol, object?>();
         while (true)
         {
-            var diagnostics = new List<string>();
+            var diagnostics = new DiagnosticBag();
             " > ".Log(ConsoleColor.DarkGray, false);
 
-            line = Console.ReadLine() ?? "";
+            var line = Console.ReadLine() ?? "";
             if (line.ToLower() == "#exit()")
             {
                 return;
@@ -64,44 +41,22 @@ internal static class Program
                 Console.Clear();
                 continue;
             }
-            var expression = SyntaxTree.Parse(line);
-            var binder = new Binder();
-            var boundExpression = binder.BindExpression(expression?.Root as ExpressionSyntax);
-            if (expression is null)
+            var result = Compilation.EvalLine(line, vars, printTree);
+            diagnostics.InsertAll(result.Diagnostics);
+            ShowErrors(diagnostics);
+            if (diagnostics.HasError)
             {
-                ShowErrors(diagnostics);
                 continue;
             }
-            diagnostics.AddRange(expression.Diagnostics);
-            diagnostics.AddRange(binder.Diagnostics);
-            if (printTree)
-            {
-                Console.ForegroundColor = ConsoleColor.DarkGray;
-                PrintTree(expression.Root);
-                Console.ResetColor();
-            }
-            if (boundExpression is null)
-            {
-                ShowErrors(diagnostics);
-                continue;
-            }
-            var eval = new Evaluator(boundExpression);
-            var result = eval.Evaluate();
-            diagnostics.AddRange(eval.Diagnostics);
-            if (diagnostics.Count > 0)
-            {
-                ShowErrors(diagnostics);
-                continue;
-            }
-            $"   {result}".Log(ConsoleColor.Green);
+
+            $"   {result.Value ?? "null"}".Log((result?.Value?.GetType() ?? typeof(void)).GetColor());
+
             // $"{eval.AsStringVersion()}".Log(ConsoleColor.DarkGray);
         }
     }
 
-    private static void ShowErrors(List<string> diagnostics)
+    private static void ShowErrors(DiagnosticBag diagnostics)
     {
-        Console.ForegroundColor = ConsoleColor.Red;
-        diagnostics.ForEach(Console.WriteLine);
-        Console.ResetColor();
+        diagnostics.ReportAll();
     }
 }

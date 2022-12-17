@@ -6,7 +6,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
-using Theta.CodeAnalysis.Utils;
+using Theta.CodeAnalysis.Diagnostics;
+using Theta.CodeAnalysis;
 
 internal sealed class Parser
 {
@@ -15,14 +16,14 @@ internal sealed class Parser
     private int _position;
 
 
-    public List<string> Diagnostics { get; private set; } = new();
+    public DiagnosticBag Diagnostics { get; private set; } = new();
 
     public Parser(string text)
     {
         var lexer = new Lexer(text);
         _tokens = lexer.Where(x => x.Type != SyntaxType.Whitespace && x.Type != SyntaxType.Invalid).ToList();
         _position = 0;
-        Diagnostics.AddRange(lexer.Diagnostics);
+        Diagnostics.InsertAll(lexer.Diagnostics);
     }
 
     public SyntaxTree Parse()
@@ -62,19 +63,37 @@ internal sealed class Parser
         {
             return NextToken();
         }
-        Diagnostics.Add($"ERROR: Unexpected token <{Current.Type}> expected <{type}>.");
+        Diagnostics.ReportUnexpectedToken(Current.Span, Current.Type, type);
         return new SyntaxToken(type) { Position = _position, Text = "" };
+    }
+    private ExpressionSyntax ParseExpression()
+    {
+        return ParseAssignmentExpression();
+    }
+
+    private ExpressionSyntax ParseAssignmentExpression()
+    {
+        if (Peek(0).Type == SyntaxType.IdentifierToken && Peek(1).Type == SyntaxType.EqualsToken)
+        {
+            var identifierToken = NextToken();
+            var operatorToken = NextToken();
+            var right = ParseAssignmentExpression();
+            return new AssignmentExpressionSyntax(identifierToken, operatorToken, right);
+        }
+
+        return ParseBinaryExpression();
     }
 
 
-    private ExpressionSyntax ParseExpression(int parentPrecedence = 0)
+
+    private ExpressionSyntax ParseBinaryExpression(int parentPrecedence = 0)
     {
         ExpressionSyntax left;
         var unaryOperatorPrecedence = Current.Type.GetUnaryOperatorPrecedence();
         if (unaryOperatorPrecedence > 0 && unaryOperatorPrecedence >= parentPrecedence)
         {
             var operatorToken = NextToken();
-            var operand = ParseExpression(unaryOperatorPrecedence);
+            var operand = ParseBinaryExpression(unaryOperatorPrecedence);
             left = new UnaryExpressionSyntax
             {
                 Operand = operand,
@@ -93,7 +112,7 @@ internal sealed class Parser
                 break;
             }
             var operatorToken = NextToken();
-            var right = ParseExpression(precedence);
+            var right = ParseBinaryExpression(precedence);
             left = new BinaryExpressionSyntax()
             {
                 Left = left,
@@ -176,7 +195,9 @@ internal sealed class Parser
                     Value = value
                 };
             }
-
+            case SyntaxType.IdentifierToken:
+                var identifierToken = NextToken();
+                return new NamedExpressionSyntax(identifierToken);
             case SyntaxType.NullKeyword:
                 NextToken();
                 return new LiteralExpressionSyntax { Value = null };
