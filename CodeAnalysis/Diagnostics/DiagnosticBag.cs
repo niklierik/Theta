@@ -121,4 +121,9 @@ public sealed class DiagnosticBag : IEnumerable<Diagnostic>
     {
         Report(span, $"Undefined object with name '{name}'.", MessageType.Warning);
     }
+
+    public void ReportInvalidCast(CodeAnalysis.VariableSymbol key, BoundExpression? expression, TextSpan span)
+    {
+        Report(span, $"Cannot cast {expression?.Type ?? typeof(void)} to {key.Type} for variable {key.Name}.");
+    }
 }

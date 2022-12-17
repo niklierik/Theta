@@ -1,4 +1,4 @@
-﻿namespace Theta.Utils;
+﻿namespace Theta.CodeAnalysis;
 
 using System;
 using System.Collections.Generic;

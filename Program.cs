@@ -7,7 +7,7 @@ using Theta.CodeAnalysis.Binding;
 using Theta.CodeAnalysis.Diagnostics;
 using Theta.CodeAnalysis.Evaluation;
 using Theta.CodeAnalysis.Syntax;
-using Theta.Utils;
+using Theta.CodeAnalysis;
 
 internal static class Program
 {
@@ -18,7 +18,7 @@ internal static class Program
         Console.InputEncoding = Console.OutputEncoding = Encoding.UTF8;
         CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
         bool printTree = false;
-        var vars = new Dictionary<string, object>();
+        var vars = new Dictionary<VariableSymbol, object?>();
         while (true)
         {
             var diagnostics = new DiagnosticBag();

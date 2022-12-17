@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Theta.CodeAnalysis.Diagnostics;
-using Theta.Utils;
+using Theta.CodeAnalysis;
 
 public sealed class Lexer : IEnumerable<SyntaxToken>
 {

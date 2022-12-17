@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Theta.CodeAnalysis.Binding;
 using Theta.CodeAnalysis.Diagnostics;
+using Theta.CodeAnalysis;
 using static Theta.CodeAnalysis.Syntax.Parser;
 
 public sealed class Evaluator
@@ -15,9 +16,9 @@ public sealed class Evaluator
     private readonly BoundExpression _tree;
 
     public DiagnosticBag Diagnostics { get; } = new();
-    public Dictionary<string, object> Vars { get; }
+    public Dictionary<VariableSymbol, object?> Vars { get; }
 
-    public Evaluator(BoundExpression tree, Dictionary<string, object> vars)
+    public Evaluator(BoundExpression tree, Dictionary<VariableSymbol, object?> vars)
     {
         _tree = tree;
         Vars = vars;
@@ -88,12 +89,12 @@ public sealed class Evaluator
         }
         else if (root is BoundVariableExpression variable)
         {
-            return Vars[variable.Name];
+            return Vars[variable.Variable];
         }
         else if (root is BoundAssignmentExpression assignment)
         {
             var value = EvaluateExpression(assignment.Expression);
-            Vars[assignment.Name] = value;
+            Vars[new VariableSymbol(assignment.Name, assignment.Type)] = value;
             return value;
         }
         else if (root is BoundBinaryExpression binary)

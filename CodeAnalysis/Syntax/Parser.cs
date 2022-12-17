@@ -7,7 +7,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using Theta.CodeAnalysis.Diagnostics;
-using Theta.Utils;
+using Theta.CodeAnalysis;
 
 internal sealed class Parser
 {

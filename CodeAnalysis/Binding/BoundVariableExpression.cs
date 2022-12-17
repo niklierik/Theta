@@ -1,16 +1,18 @@
-﻿namespace Theta.CodeAnalysis.Binding;
+﻿using Theta.CodeAnalysis;
+
+namespace Theta.CodeAnalysis.Binding;
 
 public sealed class BoundVariableExpression : BoundExpression
 {
-    public BoundVariableExpression(string name, Type type)
+    public BoundVariableExpression(VariableSymbol variable)
     {
-        Name = name;
-        Type = type;
+        Variable = variable;
     }
 
-    public override Type Type { get; }
+    public override Type Type => Variable.Type;
 
     public override BoundNodeType NodeType => BoundNodeType.VariableExpression;
 
-    public string Name { get; }
+    public string Name => Variable.Name;
+    public VariableSymbol Variable { get; }
 }

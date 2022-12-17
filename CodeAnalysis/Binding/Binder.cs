@@ -1,20 +1,22 @@
 ﻿using System.Numerics;
+using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 using Theta.CodeAnalysis.Diagnostics;
 using Theta.CodeAnalysis.Syntax;
+using Theta.CodeAnalysis;
 
 namespace Theta.CodeAnalysis.Binding;
 
 public sealed class Binder
 {
-    public Binder(Dictionary<string, object> vars)
+    public Binder(Dictionary<VariableSymbol, object?> vars)
     {
         Vars = vars;
     }
 
     public DiagnosticBag Diagnostics { get; private set; } = new();
-    public Dictionary<string, object> Vars { get; }
+    public Dictionary<VariableSymbol, object?> Vars { get; }
 
     public BoundExpression? BindExpression(ExpressionSyntax? syntax)
     {
@@ -98,19 +100,26 @@ public sealed class Binder
     private BoundExpression? BindNamedExpression(NamedExpressionSyntax namedExpression)
     {
         var name = namedExpression.IdentifierToken.Text;
-        if (!Vars.TryGetValue(name, out var value))
+        var variable = Vars.FirstOrDefault(v => v.Key.Name == name);
+        if (variable.Key is null)
         {
             Diagnostics.ReportUndefinedName(name, namedExpression.IdentifierToken.Span);
             return new BoundLiteralExpression(null);
         }
-        var type = value?.GetType() ?? typeof(void);
-        return new BoundVariableExpression(name, type);
+        return new BoundVariableExpression(variable.Key);
     }
 
     private BoundExpression? BindAssignmentExpression(AssignmentExpressionSyntax assignmentExpression)
     {
         var name = assignmentExpression.Identifier.Text;
+
         var expression = BindExpression(assignmentExpression.Expression);
+        var variable = Vars.FirstOrDefault(v => v.Key.Name == name);
+        if (variable.Key is not null && !variable.Key.Type.IsAssignableFrom(expression?.Type ?? typeof(void)))
+        {
+            Diagnostics.ReportInvalidCast(variable.Key, expression, assignmentExpression.Identifier.Span);
+            return new BoundLiteralExpression(null);
+        }
         return new BoundAssignmentExpression(name, expression);
     }
 

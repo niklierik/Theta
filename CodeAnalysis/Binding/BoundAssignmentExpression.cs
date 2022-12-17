@@ -1,4 +1,6 @@
-﻿namespace Theta.CodeAnalysis.Binding;
+﻿using Theta.CodeAnalysis;
+
+namespace Theta.CodeAnalysis.Binding;
 
 public sealed class BoundAssignmentExpression : BoundExpression
 {

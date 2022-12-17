@@ -3,6 +3,7 @@
 using Theta.CodeAnalysis.Binding;
 using Theta.CodeAnalysis.Diagnostics;
 using Theta.CodeAnalysis.Syntax;
+using Theta.CodeAnalysis;
 
 public sealed class Compilation
 {
@@ -15,7 +16,7 @@ public sealed class Compilation
 
     public DiagnosticBag Diagnostics { get; } = new();
 
-    public EvaluationResult Evaluate(Dictionary<string, object> vars)
+    public EvaluationResult Evaluate(Dictionary<VariableSymbol, object?> vars)
     {
         var binder = new Binder(vars);
         var boundExpression = binder.BindExpression(Syntax.Root as ExpressionSyntax);
@@ -34,7 +35,7 @@ public sealed class Compilation
         return new EvaluationResult(Diagnostics, res);
     }
 
-    public static EvaluationResult EvalLine(string line, Dictionary<string, object> vars, bool printTree = false)
+    public static EvaluationResult EvalLine(string line, Dictionary<VariableSymbol, object?> vars, bool printTree = false)
     {
         var expression = SyntaxTree.Parse(line);
         var compilation = new Compilation(expression);
