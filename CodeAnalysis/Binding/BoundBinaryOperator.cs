@@ -1,36 +1,44 @@
 ﻿namespace Theta.CodeAnalysis.Binding;
+
+using System.Numerics;
 using Theta.CodeAnalysis.Syntax;
 
 public sealed class BoundBinaryOperator
 {
 
-    public static List<BoundBinaryOperator> BinaryOperators { get; private set; } = new()
-    {
-        new(SyntaxType.PlusToken,BoundBinaryOperatorType.Add,typeof(double)),
-        new(SyntaxType.PlusToken,BoundBinaryOperatorType.Add,typeof(long)),
-        new(SyntaxType.MinusToken,BoundBinaryOperatorType.Subtract,typeof(double)),
-        new(SyntaxType.MinusToken,BoundBinaryOperatorType.Subtract,typeof(long)),
-        new(SyntaxType.StarToken,BoundBinaryOperatorType.Multiply,typeof(double)),
-        new(SyntaxType.StarToken,BoundBinaryOperatorType.Multiply,typeof(long)),
-        new(SyntaxType.SlashToken,BoundBinaryOperatorType.Divide,typeof(double)),
-        new(SyntaxType.SlashToken,BoundBinaryOperatorType.Divide,typeof(long)),
-        new(SyntaxType.PercentToken,BoundBinaryOperatorType.Modulo,typeof(double)),
-        new(SyntaxType.PercentToken,BoundBinaryOperatorType.Modulo,typeof(long)),
-        new(SyntaxType.HatToken,BoundBinaryOperatorType.Pow,typeof(double)),
-        new(SyntaxType.HatToken,BoundBinaryOperatorType.Pow,typeof(long)),
-        new(SyntaxType.AmpersandAmpersandToken,BoundBinaryOperatorType.BoolAnd,typeof(bool)),
-        new(SyntaxType.PipePipeToken,BoundBinaryOperatorType.BoolOr,typeof(bool)),
-        new(SyntaxType.DoubleEqualsToken,BoundBinaryOperatorType.Equality,typeof(object),typeof(bool)),
-        new(SyntaxType.TripleEqualsToken,BoundBinaryOperatorType.RefEquality,typeof(object),typeof(bool)),
-        new(SyntaxType.BangEqualsToken,BoundBinaryOperatorType.Inequality,typeof(object),typeof(bool)),
-        new(SyntaxType.BangDoubleEqualsToken,BoundBinaryOperatorType.RefInequality,typeof(object),typeof(bool)),
-        new(SyntaxType.GreaterToken,BoundBinaryOperatorType.Greater,typeof(IComparable),typeof(bool)),
-        new(SyntaxType.GreaterOrEqualsToken,BoundBinaryOperatorType.GreaterOrEquals,typeof(IComparable),typeof(bool)),
-        new(SyntaxType.LessToken,BoundBinaryOperatorType.Less,typeof(IComparable),typeof(bool)),
-        new(SyntaxType.LessOrEqualsToken,BoundBinaryOperatorType.LessOrEquals,typeof(IComparable),typeof(bool)),
-        new(SyntaxType.LessEqualsGreaterToken,BoundBinaryOperatorType.Comparsion,typeof(IComparable),typeof(long)),
+    public static List<BoundBinaryOperator> BinaryOperators { get; private set; } = GenerateDefaults().ToList();
 
-    };
+    public static IEnumerable<BoundBinaryOperator> GenerateDefaults()
+    {
+        return new List<BoundBinaryOperator>()
+        {
+            new (SyntaxType.AmpersandAmpersandToken, BoundBinaryOperatorType.BoolAnd,typeof(bool)),
+            new (SyntaxType.PipePipeToken, BoundBinaryOperatorType.BoolOr,typeof(bool)),
+            new (SyntaxType.DoubleEqualsToken, BoundBinaryOperatorType.Equality,typeof(object),typeof(bool)),
+            new (SyntaxType.TripleEqualsToken, BoundBinaryOperatorType.RefEquality,typeof(object),typeof(bool)),
+            new (SyntaxType.BangEqualsToken, BoundBinaryOperatorType.Inequality,typeof(object),typeof(bool)),
+            new (SyntaxType.BangDoubleEqualsToken, BoundBinaryOperatorType.RefInequality,typeof(object),typeof(bool)),
+            new (SyntaxType.GreaterToken, BoundBinaryOperatorType.Greater,typeof(IComparable),typeof(bool)),
+            new (SyntaxType.GreaterOrEqualsToken, BoundBinaryOperatorType.GreaterOrEquals,typeof(IComparable),typeof(bool)),
+            new (SyntaxType.LessToken, BoundBinaryOperatorType.Less,typeof(IComparable),typeof(bool)),
+            new (SyntaxType.LessOrEqualsToken, BoundBinaryOperatorType.LessOrEquals,typeof(IComparable),typeof(bool)),
+            new (SyntaxType.LessEqualsGreaterToken, BoundBinaryOperatorType.Comparsion,typeof(IComparable),typeof(long)),
+        }
+        .Concat(NumberOperator(SyntaxType.PlusToken, BoundBinaryOperatorType.Add))
+        .Concat(NumberOperator(SyntaxType.MinusToken, BoundBinaryOperatorType.Subtract))
+        .Concat(NumberOperator(SyntaxType.StarToken, BoundBinaryOperatorType.Multiply))
+        .Concat(NumberOperator(SyntaxType.SlashToken, BoundBinaryOperatorType.Divide))
+        .Concat(NumberOperator(SyntaxType.PercentToken, BoundBinaryOperatorType.Modulo))
+        .Concat(NumberOperator(SyntaxType.HatToken, BoundBinaryOperatorType.Pow));
+    }
+
+    public static IEnumerable<BoundBinaryOperator> NumberOperator(SyntaxType syntax, BoundBinaryOperatorType bound)
+    {
+        yield return new(syntax, bound, typeof(double));
+        yield return new(syntax, bound, typeof(long));
+        yield return new(syntax, bound, typeof(long), typeof(double), typeof(double));
+        yield return new(syntax, bound, typeof(double), typeof(long), typeof(double));
+    }
 
     public BoundBinaryOperatorType Type { get; }
 

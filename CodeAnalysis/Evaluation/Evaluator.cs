@@ -1,4 +1,4 @@
-﻿namespace Theta.CodeAnalysis;
+﻿namespace Theta.CodeAnalysis.Evaluation;
 
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Theta.CodeAnalysis.Binding;
-using Theta.CodeAnalysis.Syntax;
+using Theta.CodeAnalysis.Diagnostics;
 using static Theta.CodeAnalysis.Syntax.Parser;
 
 public sealed class Evaluator
@@ -14,11 +14,11 @@ public sealed class Evaluator
 
     private readonly BoundExpression _tree;
 
-    public List<string> Diagnostics { get; } = new();
+    public DiagnosticBag Diagnostics { get; } = new();
 
     public Evaluator(BoundExpression tree)
     {
-        this._tree = tree;
+        _tree = tree;
     }
 
     public object? Evaluate()
@@ -59,25 +59,25 @@ public sealed class Evaluator
                 var operand = EvaluateExpression(unary.Operand);
                 if (operand is null)
                 {
-                    Diagnostics.Add("ERROR: Unexpected null literal as an operand for unary expression.");
+                    Diagnostics.ReportUnexpectedNull();
                     return null;
                 }
                 switch (unary.Operator.Type)
                 {
                     case BoundUnaryOperatorType.Plus:
-                        return +(dynamic) operand;
+                        return +(dynamic)operand;
                     case BoundUnaryOperatorType.Not:
-                        return !(dynamic) operand;
+                        return !(dynamic)operand;
                     case BoundUnaryOperatorType.Minus:
-                        return -(dynamic) operand;
+                        return -(dynamic)operand;
                     default:
-                        Diagnostics.Add($"ERROR: Unary operator {unary.Operator.Type} has undefined behaviour.");
+                        Diagnostics.ReportUndefinedUnaryBehaviour(unary);
                         return null;
                 }
             }
             catch (Exception ex)
             {
-                Diagnostics.Add(ex.ToString());
+                Diagnostics.ReportException(ex);
             }
         }
         if (root is BoundBinaryExpression binary)
@@ -92,45 +92,45 @@ public sealed class Evaluator
                 switch (binary.Operator.Type)
                 {
                     case BoundBinaryOperatorType.Add:
-                        return (dynamic) left + (dynamic) right;
+                        return (dynamic)left + (dynamic)right;
                     case BoundBinaryOperatorType.Subtract:
-                        return (dynamic) left - (dynamic) right;
+                        return (dynamic)left - (dynamic)right;
                     case BoundBinaryOperatorType.Multiply:
-                        return (dynamic) left * (dynamic) right;
+                        return (dynamic)left * (dynamic)right;
                     case BoundBinaryOperatorType.Divide:
-                        return (dynamic) left / (dynamic) right;
+                        return (dynamic)left / (dynamic)right;
                     case BoundBinaryOperatorType.Modulo:
-                        return (dynamic) left % (dynamic) right;
+                        return (dynamic)left % (dynamic)right;
                     case BoundBinaryOperatorType.Pow:
-                        return Math.Pow((dynamic) left, (dynamic) right);
+                        return Math.Pow((dynamic)left, (dynamic)right);
                     case BoundBinaryOperatorType.BoolAnd:
-                        return (dynamic) left && (dynamic) right;
+                        return (dynamic)left && (dynamic)right;
                     case BoundBinaryOperatorType.BoolOr:
-                        return (dynamic) left || (dynamic) right;
+                        return (dynamic)left || (dynamic)right;
                     case BoundBinaryOperatorType.Equality:
-                        return object.Equals(left, right);
+                        return Equals(left, right);
                     case BoundBinaryOperatorType.Inequality:
-                        return !object.Equals(left, right);
+                        return !Equals(left, right);
                     case BoundBinaryOperatorType.RefEquality:
-                        return object.ReferenceEquals(left, right);
+                        return ReferenceEquals(left, right);
                     case BoundBinaryOperatorType.RefInequality:
-                        return !object.ReferenceEquals(left, right);
+                        return !ReferenceEquals(left, right);
                     case BoundBinaryOperatorType.Less:
-                        return (dynamic) left < (dynamic) right;
+                        return (dynamic)left < (dynamic)right;
                     case BoundBinaryOperatorType.Greater:
-                        return (dynamic) left > (dynamic) right;
+                        return (dynamic)left > (dynamic)right;
                     case BoundBinaryOperatorType.LessOrEquals:
-                        return (dynamic) left <= (dynamic) right;
+                        return (dynamic)left <= (dynamic)right;
                     case BoundBinaryOperatorType.GreaterOrEquals:
-                        return (dynamic) left >= (dynamic) right;
+                        return (dynamic)left >= (dynamic)right;
                     case BoundBinaryOperatorType.Comparsion:
-                        if (object.Equals(left, right))
+                        if (Equals(left, right))
                         {
                             return 0;
                         }
                         try
                         {
-                            if ((dynamic) left < (dynamic) right)
+                            if ((dynamic)left < (dynamic)right)
                             {
                                 return -1;
                             }
@@ -142,15 +142,15 @@ public sealed class Evaluator
                         }
                 }
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
-                Diagnostics.Add($"ERROR: Binary operator {binary.Operator.Type} has undefined behaviour.");
+                Diagnostics.ReportUndefinedBinaryBehaviour(binary);
                 return null;
             }
             catch (Exception ex)
             {
-                Diagnostics.Add("ERROR: " + ex.ToString());
+                Diagnostics.ReportException(ex);
             }
         }
-        Diagnostics.Add("ERROR: Cannot parse expression.");
+        Diagnostics.ReportInvalidExpression();
         return null;
     }
 }

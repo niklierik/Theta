@@ -2,7 +2,7 @@
 
 using System.Collections;
 using System.Collections.Generic;
-
+using Theta.CodeAnalysis.Diagnostics;
 
 public sealed class SyntaxTree : IEnumerable<SyntaxNode>
 {
@@ -10,7 +10,7 @@ public sealed class SyntaxTree : IEnumerable<SyntaxNode>
 
     public SyntaxToken? EOF { get; init; } = null;
 
-    public List<string> Diagnostics { get; private set; } = new();
+    public DiagnosticBag Diagnostics { get; private set; } = new();
 
     public SyntaxTree()
     {
@@ -23,9 +23,9 @@ public sealed class SyntaxTree : IEnumerable<SyntaxNode>
         return parser.Parse();
     }
 
-    public SyntaxTree(List<string> diagnostics) : this()
+    public SyntaxTree(DiagnosticBag diagnostics) : this()
     {
-        Diagnostics.AddRange(diagnostics);
+        Diagnostics.InsertAll(diagnostics);
     }
 
     public IEnumerator<SyntaxNode> GetEnumerator()

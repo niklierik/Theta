@@ -6,7 +6,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
-using Theta.CodeAnalysis.Utils;
+using Theta.CodeAnalysis.Diagnostics;
+using Theta.Utils;
 
 internal sealed class Parser
 {
@@ -15,14 +16,14 @@ internal sealed class Parser
     private int _position;
 
 
-    public List<string> Diagnostics { get; private set; } = new();
+    public DiagnosticBag Diagnostics { get; private set; } = new();
 
     public Parser(string text)
     {
         var lexer = new Lexer(text);
         _tokens = lexer.Where(x => x.Type != SyntaxType.Whitespace && x.Type != SyntaxType.Invalid).ToList();
         _position = 0;
-        Diagnostics.AddRange(lexer.Diagnostics);
+        Diagnostics.InsertAll(lexer.Diagnostics);
     }
 
     public SyntaxTree Parse()
@@ -62,7 +63,7 @@ internal sealed class Parser
         {
             return NextToken();
         }
-        Diagnostics.Add($"ERROR: Unexpected token <{Current.Type}> expected <{type}>.");
+        Diagnostics.ReportUnexpectedToken(Current.Span, Current.Type, type);
         return new SyntaxToken(type) { Position = _position, Text = "" };
     }
 
