@@ -18,6 +18,7 @@ internal static class Program
         Console.InputEncoding = Console.OutputEncoding = Encoding.UTF8;
         CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
         bool printTree = false;
+        var vars = new Dictionary<string, object>();
         while (true)
         {
             var diagnostics = new DiagnosticBag();
@@ -40,12 +41,11 @@ internal static class Program
                 Console.Clear();
                 continue;
             }
-            var result = Compilation.EvalLine(line, printTree);
+            var result = Compilation.EvalLine(line, vars, printTree);
             diagnostics.InsertAll(result.Diagnostics);
-
+            ShowErrors(diagnostics);
             if (diagnostics.HasError)
             {
-                ShowErrors(diagnostics);
                 continue;
             }
 
@@ -57,8 +57,6 @@ internal static class Program
 
     private static void ShowErrors(DiagnosticBag diagnostics)
     {
-        Console.ForegroundColor = ConsoleColor.Red;
-        diagnostics.ForEach(Console.WriteLine);
-        Console.ResetColor();
+        diagnostics.ReportAll();
     }
 }

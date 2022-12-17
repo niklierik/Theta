@@ -15,10 +15,12 @@ public sealed class Evaluator
     private readonly BoundExpression _tree;
 
     public DiagnosticBag Diagnostics { get; } = new();
+    public Dictionary<string, object> Vars { get; }
 
-    public Evaluator(BoundExpression tree)
+    public Evaluator(BoundExpression tree, Dictionary<string, object> vars)
     {
         _tree = tree;
+        Vars = vars;
     }
 
     public object? Evaluate()
@@ -40,9 +42,13 @@ public sealed class Evaluator
         return $"__{node.Type}__( {string.Join(", ", node.Children.Select(child => AsStringVersion(child)))} )";
     }
     */
-    private object? EvaluateExpression(BoundExpression root)
+    private object? EvaluateExpression(BoundExpression? root)
     {
-        if (root is BoundLiteralExpression literal)
+        if (root is null)
+        {
+            return null;
+        }
+        else if (root is BoundLiteralExpression literal)
         {
             return literal.Value;
         }
@@ -52,7 +58,7 @@ public sealed class Evaluator
             return EvaluateExpression(expression.Expression);
         }
         */
-        if (root is BoundUnaryExpression unary)
+        else if (root is BoundUnaryExpression unary)
         {
             try
             {
@@ -65,11 +71,11 @@ public sealed class Evaluator
                 switch (unary.Operator.Type)
                 {
                     case BoundUnaryOperatorType.Plus:
-                        return +(dynamic)operand;
+                        return +(dynamic) operand;
                     case BoundUnaryOperatorType.Not:
-                        return !(dynamic)operand;
+                        return !(dynamic) operand;
                     case BoundUnaryOperatorType.Minus:
-                        return -(dynamic)operand;
+                        return -(dynamic) operand;
                     default:
                         Diagnostics.ReportUndefinedUnaryBehaviour(unary);
                         return null;
@@ -80,7 +86,17 @@ public sealed class Evaluator
                 Diagnostics.ReportException(ex);
             }
         }
-        if (root is BoundBinaryExpression binary)
+        else if (root is BoundVariableExpression variable)
+        {
+            return Vars[variable.Name];
+        }
+        else if (root is BoundAssignmentExpression assignment)
+        {
+            var value = EvaluateExpression(assignment.Expression);
+            Vars[assignment.Name] = value;
+            return value;
+        }
+        else if (root is BoundBinaryExpression binary)
         {
             try
             {
@@ -92,21 +108,21 @@ public sealed class Evaluator
                 switch (binary.Operator.Type)
                 {
                     case BoundBinaryOperatorType.Add:
-                        return (dynamic)left + (dynamic)right;
+                        return (dynamic) left + (dynamic) right;
                     case BoundBinaryOperatorType.Subtract:
-                        return (dynamic)left - (dynamic)right;
+                        return (dynamic) left - (dynamic) right;
                     case BoundBinaryOperatorType.Multiply:
-                        return (dynamic)left * (dynamic)right;
+                        return (dynamic) left * (dynamic) right;
                     case BoundBinaryOperatorType.Divide:
-                        return (dynamic)left / (dynamic)right;
+                        return (dynamic) left / (dynamic) right;
                     case BoundBinaryOperatorType.Modulo:
-                        return (dynamic)left % (dynamic)right;
+                        return (dynamic) left % (dynamic) right;
                     case BoundBinaryOperatorType.Pow:
-                        return Math.Pow((dynamic)left, (dynamic)right);
+                        return Math.Pow((dynamic) left, (dynamic) right);
                     case BoundBinaryOperatorType.BoolAnd:
-                        return (dynamic)left && (dynamic)right;
+                        return (dynamic) left && (dynamic) right;
                     case BoundBinaryOperatorType.BoolOr:
-                        return (dynamic)left || (dynamic)right;
+                        return (dynamic) left || (dynamic) right;
                     case BoundBinaryOperatorType.Equality:
                         return Equals(left, right);
                     case BoundBinaryOperatorType.Inequality:
@@ -116,13 +132,13 @@ public sealed class Evaluator
                     case BoundBinaryOperatorType.RefInequality:
                         return !ReferenceEquals(left, right);
                     case BoundBinaryOperatorType.Less:
-                        return (dynamic)left < (dynamic)right;
+                        return (dynamic) left < (dynamic) right;
                     case BoundBinaryOperatorType.Greater:
-                        return (dynamic)left > (dynamic)right;
+                        return (dynamic) left > (dynamic) right;
                     case BoundBinaryOperatorType.LessOrEquals:
-                        return (dynamic)left <= (dynamic)right;
+                        return (dynamic) left <= (dynamic) right;
                     case BoundBinaryOperatorType.GreaterOrEquals:
-                        return (dynamic)left >= (dynamic)right;
+                        return (dynamic) left >= (dynamic) right;
                     case BoundBinaryOperatorType.Comparsion:
                         if (Equals(left, right))
                         {
@@ -130,7 +146,7 @@ public sealed class Evaluator
                         }
                         try
                         {
-                            if ((dynamic)left < (dynamic)right)
+                            if ((dynamic) left < (dynamic) right)
                             {
                                 return -1;
                             }

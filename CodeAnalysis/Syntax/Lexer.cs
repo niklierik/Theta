@@ -190,6 +190,8 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
                 return new SyntaxToken(SyntaxType.LessToken) { Position = _pos++, Text = "<" };
             case '>':
                 return new SyntaxToken(SyntaxType.GreaterToken) { Position = _pos++, Text = ">" };
+            case '=':
+                return new SyntaxToken(SyntaxType.EqualsToken) { Position = _pos++, Text = "=" };
                 /*
                 case '&':
                     if (Next == '&')

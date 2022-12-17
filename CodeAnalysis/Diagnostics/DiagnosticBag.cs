@@ -14,7 +14,7 @@ public sealed class DiagnosticBag : IEnumerable<Diagnostic>
         Diagnostics.AddRange(other.Diagnostics);
     }
 
-    public bool HasError => Diagnostics.Count > 0;
+    public bool HasError => Diagnostics.Where(d => d.MessageType == MessageType.Error).Any();
 
     public IEnumerator<Diagnostic> GetEnumerator() => Diagnostics.GetEnumerator();
 
@@ -111,7 +111,14 @@ public sealed class DiagnosticBag : IEnumerable<Diagnostic>
         }
         foreach (var d in this)
         {
+            Console.ForegroundColor = d.MessageType.GetColor();
             write(d.ToString());
         }
+        Console.ResetColor();
+    }
+
+    public void ReportUndefinedName(string name, TextSpan span)
+    {
+        Report(span, $"Undefined object with name '{name}'.", MessageType.Warning);
     }
 }

@@ -4,5 +4,7 @@ public enum BoundNodeType
 {
     UnaryExpression,
     LiteralExpression,
-    BinaryExpression
+    BinaryExpression,
+    VariableExpression,
+    AssignmentExpression
 }

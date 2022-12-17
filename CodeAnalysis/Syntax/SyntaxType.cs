@@ -8,6 +8,7 @@ public enum SyntaxType
     Whitespace,
     // Literal
     Literal,
+    IdentifierToken,
     // Operators
     PlusToken,
     MinusToken,
@@ -18,19 +19,6 @@ public enum SyntaxType
     BangToken,
     AmpersandAmpersandToken,
     PipePipeToken,
-    // Brackets
-    OpenGroup,
-    CloseGroup,
-    // Expressions
-    LiteralExpression,
-    BinaryExpression,
-    GroupExpression,
-    UnaryExpression,
-    // Keywords
-    TrueKeyword,
-    FalseKeyword,
-    NullKeyword,
-    IdentifierToken,
     DoubleEqualsToken,
     BangEqualsToken,
     TripleEqualsToken,
@@ -40,4 +28,19 @@ public enum SyntaxType
     LessOrEqualsToken,
     LessToken,
     GreaterToken,
+    // Brackets
+    OpenGroup,
+    CloseGroup,
+    // Expressions
+    LiteralExpression,
+    BinaryExpression,
+    GroupExpression,
+    UnaryExpression,
+    NameExpression,
+    // Keywords
+    TrueKeyword,
+    FalseKeyword,
+    NullKeyword,
+    AssignmentExpression,
+    EqualsToken,
 }

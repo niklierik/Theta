@@ -66,16 +66,34 @@ internal sealed class Parser
         Diagnostics.ReportUnexpectedToken(Current.Span, Current.Type, type);
         return new SyntaxToken(type) { Position = _position, Text = "" };
     }
+    private ExpressionSyntax ParseExpression()
+    {
+        return ParseAssignmentExpression();
+    }
+
+    private ExpressionSyntax ParseAssignmentExpression()
+    {
+        if (Peek(0).Type == SyntaxType.IdentifierToken && Peek(1).Type == SyntaxType.EqualsToken)
+        {
+            var identifierToken = NextToken();
+            var operatorToken = NextToken();
+            var right = ParseAssignmentExpression();
+            return new AssignmentExpressionSyntax(identifierToken, operatorToken, right);
+        }
+
+        return ParseBinaryExpression();
+    }
 
 
-    private ExpressionSyntax ParseExpression(int parentPrecedence = 0)
+
+    private ExpressionSyntax ParseBinaryExpression(int parentPrecedence = 0)
     {
         ExpressionSyntax left;
         var unaryOperatorPrecedence = Current.Type.GetUnaryOperatorPrecedence();
         if (unaryOperatorPrecedence > 0 && unaryOperatorPrecedence >= parentPrecedence)
         {
             var operatorToken = NextToken();
-            var operand = ParseExpression(unaryOperatorPrecedence);
+            var operand = ParseBinaryExpression(unaryOperatorPrecedence);
             left = new UnaryExpressionSyntax
             {
                 Operand = operand,
@@ -94,7 +112,7 @@ internal sealed class Parser
                 break;
             }
             var operatorToken = NextToken();
-            var right = ParseExpression(precedence);
+            var right = ParseBinaryExpression(precedence);
             left = new BinaryExpressionSyntax()
             {
                 Left = left,
@@ -177,7 +195,9 @@ internal sealed class Parser
                     Value = value
                 };
             }
-
+            case SyntaxType.IdentifierToken:
+                var identifierToken = NextToken();
+                return new NamedExpressionSyntax(identifierToken);
             case SyntaxType.NullKeyword:
                 NextToken();
                 return new LiteralExpressionSyntax { Value = null };

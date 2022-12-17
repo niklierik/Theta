@@ -8,7 +8,13 @@ namespace Theta.CodeAnalysis.Binding;
 
 public sealed class Binder
 {
+    public Binder(Dictionary<string, object> vars)
+    {
+        Vars = vars;
+    }
+
     public DiagnosticBag Diagnostics { get; private set; } = new();
+    public Dictionary<string, object> Vars { get; }
 
     public BoundExpression? BindExpression(ExpressionSyntax? syntax)
     {
@@ -29,11 +35,17 @@ public sealed class Binder
             case SyntaxType.GroupExpression:
                 BracketExpression bracketExpression = (BracketExpression) syntax;
                 return BindExpression(bracketExpression.Expression);
+            case SyntaxType.NameExpression:
+                NamedExpressionSyntax namedExpression = (NamedExpressionSyntax) syntax;
+                return BindNamedExpression(namedExpression);
+            case SyntaxType.AssignmentExpression:
+                AssignmentExpressionSyntax assignmentExpression = (AssignmentExpressionSyntax) syntax;
+                return BindAssignmentExpression(assignmentExpression);
             default:
-                Diagnostics.ReportInvalidSyntax(syntax);
-                return null;
+                throw new Exception($"Cannot continue binding. Unexpected syntax {syntax.Type}.");
         }
     }
+
 
     private BoundExpression BindLiteralExpression(LiteralExpressionSyntax literal)
     {
@@ -83,6 +95,23 @@ public sealed class Binder
     }
 
 
+    private BoundExpression? BindNamedExpression(NamedExpressionSyntax namedExpression)
+    {
+        var name = namedExpression.IdentifierToken.Text;
+        if (!Vars.TryGetValue(name, out var value))
+        {
+            Diagnostics.ReportUndefinedName(name, namedExpression.IdentifierToken.Span);
+            return new BoundLiteralExpression(null);
+        }
+        var type = value?.GetType() ?? typeof(void);
+        return new BoundVariableExpression(name, type);
+    }
 
+    private BoundExpression? BindAssignmentExpression(AssignmentExpressionSyntax assignmentExpression)
+    {
+        var name = assignmentExpression.Identifier.Text;
+        var expression = BindExpression(assignmentExpression.Expression);
+        return new BoundAssignmentExpression(name, expression);
+    }
 
 }
