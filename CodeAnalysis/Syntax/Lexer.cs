@@ -86,7 +86,7 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
                 {
                     Diagnostics.ReportInvalidInt64(text, new(start, length));
                 }
-                return new SyntaxToken(SyntaxType.Literal) { Position = start, Text = text, Value = res };
+                return new SyntaxToken(SyntaxType.NumberToken) { Position = start, Text = text, Value = res };
             }
             else
             {
@@ -94,7 +94,7 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
                 {
                     Diagnostics.ReportInvalidDouble(text, new(start, length));
                 }
-                return new SyntaxToken(SyntaxType.Literal) { Position = start, Text = text, Value = res };
+                return new SyntaxToken(SyntaxType.NumberToken) { Position = start, Text = text, Value = res };
             }
         }
         if (char.IsWhiteSpace(Current))
@@ -216,25 +216,17 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
         while (true)
         {
             var token = Lex();
-            yield return token;
             if (token.Type == SyntaxType.EndOfFile)
             {
                 break;
             }
+            yield return token;
         }
     }
 
 
     IEnumerator IEnumerable.GetEnumerator()
     {
-        while (true)
-        {
-            var token = Lex();
-            yield return token;
-            if (token.Type == SyntaxType.EndOfFile)
-            {
-                break;
-            }
-        }
+        return GetEnumerator();
     }
 }

@@ -7,9 +7,10 @@ public enum SyntaxType
     EndOfFile,
     Whitespace,
     // Literal
-    Literal,
+    NumberToken,
     IdentifierToken,
     // Operators
+    EqualsToken,
     PlusToken,
     MinusToken,
     StarToken,
@@ -37,10 +38,9 @@ public enum SyntaxType
     GroupExpression,
     UnaryExpression,
     NameExpression,
+    AssignmentExpression,
     // Keywords
     TrueKeyword,
     FalseKeyword,
     NullKeyword,
-    AssignmentExpression,
-    EqualsToken,
 }
