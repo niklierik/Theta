@@ -153,49 +153,63 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
 
     private SyntaxToken? ReadFixText(SyntaxType type, string text)
     {
+        if (string.IsNullOrEmpty(text))
+        {
+            return null;
+        }
         if (Match(text))
         {
             _pos += text.Length;
-            return new SyntaxToken(type) { Position = _start, Text = text == "\0" ? "" : text };
+            return new SyntaxToken(type) { Position = _start, Text = text };
         }
         return null;
     }
 
-    private SyntaxToken? ReadOperators()
+    // Tries reading tokens in this order.
+    // If it finds one, immeadietly returns it (therefore, => has to come first than = or >)
+    private List<SyntaxType> ReadTypes { get; init; } = new()
     {
-        var token = ReadFixText(SyntaxType.AmpersandAmpersandToken, "&&");
-        token ??= ReadFixText(SyntaxType.PipePipeToken, "||");
-        token ??= ReadFixText(SyntaxType.LessEqualsGreaterToken, "<=>");
-        token ??= ReadFixText(SyntaxType.ThinArrowToken, "->");
-        token ??= ReadFixText(SyntaxType.ThickArrowToken, "=>");
-        token ??= ReadFixText(SyntaxType.GreaterOrEqualsToken, ">=");
-        token ??= ReadFixText(SyntaxType.LessOrEqualsToken, "<=");
-        token ??= ReadFixText(SyntaxType.TripleEqualsToken, "===");
-        token ??= ReadFixText(SyntaxType.BangDoubleEqualsToken, "!==");
-        token ??= ReadFixText(SyntaxType.DoubleEqualsToken, "==");
-        token ??= ReadFixText(SyntaxType.BangEqualsToken, "!=");
-        token ??= ReadFixText(SyntaxType.PlusToken, "+");
-        token ??= ReadFixText(SyntaxType.MinusToken, "-");
-        token ??= ReadFixText(SyntaxType.StarToken, "*");
-        token ??= ReadFixText(SyntaxType.SlashToken, "/");
-        token ??= ReadFixText(SyntaxType.PercentToken, "%");
-        token ??= ReadFixText(SyntaxType.HatToken, "^");
-        token ??= ReadFixText(SyntaxType.BangToken, "!");
-        token ??= ReadFixText(SyntaxType.LessToken, "<");
-        token ??= ReadFixText(SyntaxType.GreaterToken, ">");
-        token ??= ReadFixText(SyntaxType.EqualsToken, "=");
-        return token;
-    }
+        SyntaxType.AmpersandAmpersandToken,
+        SyntaxType.PipePipeToken,
+        SyntaxType.LessEqualsGreaterToken,
+        SyntaxType.ThinArrowToken,
+        SyntaxType.ThickArrowToken,
+        SyntaxType.GreaterOrEqualsToken,
+        SyntaxType.LessOrEqualsToken,
+        SyntaxType.TripleEqualsToken,
+        SyntaxType.BangDoubleEqualsToken,
+        SyntaxType.DoubleEqualsToken,
+        SyntaxType.BangEqualsToken,
+        SyntaxType.PlusToken,
+        SyntaxType.MinusToken,
+        SyntaxType.StarToken,
+        SyntaxType.SlashToken,
+        SyntaxType.PercentToken,
+        SyntaxType.HatToken,
+        SyntaxType.BangToken,
+        SyntaxType.LessToken,
+        SyntaxType.GreaterToken,
+        SyntaxType.EqualsToken,
+        SyntaxType.OpenGroup,
+        SyntaxType.CloseGroup,
+        SyntaxType.OpenBlock,
+        SyntaxType.CloseBlock,
+        SyntaxType.OpenArray,
+        SyntaxType.CloseArray,
+    };
 
-    private SyntaxToken? ReadSpecialCharacters()
+    private SyntaxToken? ReadConcreteTokens()
     {
-        var token = Current == '\0' ? new SyntaxToken(SyntaxType.EndOfFile) { Position = _start, Text = "" } : null;
-        token ??= ReadFixText(SyntaxType.OpenGroup, "(");
-        token ??= ReadFixText(SyntaxType.CloseGroup, ")");
-        return token;
+        foreach (var type in ReadTypes)
+        {
+            var token = ReadFixText(type, type.GetSyntaxText() ?? "");
+            if (token is not null)
+            {
+                return token;
+            }
+        }
+        return null;
     }
-
-
 
     public SyntaxToken Lex()
     {
@@ -204,8 +218,8 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
         var token = ReadNumber();
         token ??= ReadWhitespaces();
         token ??= ReadWord();
-        token ??= ReadOperators();
-        token ??= ReadSpecialCharacters();
+        token ??= ReadConcreteTokens();
+        token ??= Current == '\0' ? new SyntaxToken(SyntaxType.EndOfFile) { Position = _start, Text = "" } : null;
         if (token is null)
         {
             Diagnostics.ReportInvalidCharacter(Current, _pos);

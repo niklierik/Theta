@@ -106,17 +106,13 @@ public static class SyntaxUtils
 
     public static SyntaxType GetKeywordType(string text)
     {
-        switch (text)
+        return text switch
         {
-            case "true":
-                return SyntaxType.TrueKeyword;
-            case "false":
-                return SyntaxType.FalseKeyword;
-            case "null":
-                return SyntaxType.NullKeyword;
-            default:
-                return SyntaxType.IdentifierToken;
-        }
+            "true" => SyntaxType.TrueKeyword,
+            "false" => SyntaxType.FalseKeyword,
+            "null" => SyntaxType.NullKeyword,
+            _ => SyntaxType.IdentifierToken,
+        };
     }
 
     public static bool IsBoolean(this SyntaxType type)
@@ -149,6 +145,12 @@ public static class SyntaxUtils
             SyntaxType.GreaterToken => ">",
             SyntaxType.OpenGroup => "(",
             SyntaxType.CloseGroup => ")",
+            SyntaxType.OpenArray => "[",
+            SyntaxType.CloseArray => "]",
+            SyntaxType.OpenBlock => "{",
+            SyntaxType.CloseBlock => "}",
+            SyntaxType.ThinArrowToken => "->",
+            SyntaxType.ThickArrowToken => "=>",
             SyntaxType.TrueKeyword => "true",
             SyntaxType.FalseKeyword => "false",
             SyntaxType.NullKeyword => "null",

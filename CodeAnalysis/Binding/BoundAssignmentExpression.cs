@@ -1,4 +1,5 @@
 ﻿using Theta.CodeAnalysis;
+using Theta.CodeAnalysis.Evaluation;
 
 namespace Theta.CodeAnalysis.Binding;
 
@@ -16,4 +17,11 @@ public sealed class BoundAssignmentExpression : BoundExpression
 
     public string Name { get; }
     public BoundExpression? Expression { get; }
+
+    public override object? Evaluate(Evaluator eval)
+    {
+        var value = eval.EvaluateExpression(Expression);
+        eval.Vars[new VariableSymbol(Name, Type)] = value;
+        return value;
+    }
 }
