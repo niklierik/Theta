@@ -21,7 +21,7 @@ internal sealed class Parser
     public Parser(string text)
     {
         var lexer = new Lexer(text);
-        _tokens = lexer.Where(x => x.Type != SyntaxType.Whitespace && x.Type != SyntaxType.Invalid).ToList();
+        _tokens = lexer.Where(x => x.Type != SyntaxType.Whitespace && x.Type != SyntaxType.InvalidToken).ToList();
         _position = 0;
         Diagnostics.InsertAll(lexer.Diagnostics);
     }

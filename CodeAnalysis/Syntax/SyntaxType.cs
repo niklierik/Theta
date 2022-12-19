@@ -3,7 +3,7 @@
 public enum SyntaxType
 {
     // Specials
-    Invalid,
+    InvalidToken,
     EndOfFile,
     Whitespace,
     // Literal
@@ -29,6 +29,8 @@ public enum SyntaxType
     LessOrEqualsToken,
     LessToken,
     GreaterToken,
+    ThinArrowToken,
+    ThickArrowToken,
     // Brackets
     OpenGroup,
     CloseGroup,
