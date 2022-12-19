@@ -123,86 +123,32 @@ internal sealed class Parser
         return left;
     }
 
-
-
-    /*
-    private ExpressionSyntax ParseTerm()
-    {
-        var left = ParseFactor();
-        while (Current.Type is SyntaxType.Plus or SyntaxType.Minus)
-        {
-            var operatorToken = NextToken();
-            var right = ParseFactor();
-            left = new BinaryExpressionSyntax
-            {
-                Left = left,
-                Operator = operatorToken,
-                Right = right
-
-            };
-        }
-        return left;
-    }
-
-    private ExpressionSyntax ParseFactor()
-    {
-        var left = ParsePrimaryExpression();
-        while (Current.Type is SyntaxType.Star or SyntaxType.Slash or SyntaxType.Percent)
-        {
-            var operatorToken = NextToken();
-            var right = ParsePrimaryExpression();
-            left = new BinaryExpressionSyntax
-            {
-                Left = left,
-                Operator = operatorToken,
-                Right = right
-
-            };
-        }
-        return left;
-    }
-
-    private ExpressionSyntax ParseExpression()
-    {
-        return ParseTerm();
-    }
-    */
-
     public ExpressionSyntax ParsePrimaryExpression()
     {
         switch (Current.Type)
         {
             case SyntaxType.OpenGroup:
-            {
-                var left = NextToken();
-                var expression = ParseExpression();
-                var right = MatchToken(SyntaxType.CloseGroup);
-                return new BracketExpression()
-                {
-                    Open = left,
-                    Close = right,
-                    Expression = expression
-                };
-            }
+                return ParseGroupExpression();
 
             case SyntaxType.TrueKeyword:
             case SyntaxType.FalseKeyword:
-            {
-                var value = Current.Type == SyntaxType.TrueKeyword;
-                NextToken();
-                return new LiteralExpressionSyntax
-                {
-                    Value = value
-                };
-            }
-            case SyntaxType.IdentifierToken:
-                var identifierToken = NextToken();
-                return new NamedExpressionSyntax(identifierToken);
+                return ParseBooleanExpression();
+
             case SyntaxType.NullKeyword:
-                NextToken();
-                return new LiteralExpressionSyntax { Value = null };
+                return ParseNull();
+
+            case SyntaxType.NumberToken:
+                return ParseNumberLiteral();
+            
+            case SyntaxType.IdentifierToken:
+            default:
+                return ParseNamedExpression();
         }
-        var literalToken = MatchToken(SyntaxType.NumberToken);
+    }
+
+    private ExpressionSyntax ParseLiteral(SyntaxType type)
+    {
+        var literalToken = MatchToken(type);
 
         return new LiteralExpressionSyntax()
         {
@@ -210,4 +156,43 @@ internal sealed class Parser
         };
     }
 
+    private ExpressionSyntax ParseNumberLiteral()
+    {
+        return ParseLiteral(SyntaxType.NumberToken);
+    }
+
+    private ExpressionSyntax ParseNull()
+    {
+        NextToken();
+        return new LiteralExpressionSyntax { Value = null };
+    }
+
+    private ExpressionSyntax ParseNamedExpression()
+    {
+        var identifierToken = NextToken();
+        return new NamedExpressionSyntax(identifierToken);
+    }
+
+    private ExpressionSyntax ParseBooleanExpression()
+    {
+        var value = Current.Type == SyntaxType.TrueKeyword;
+        NextToken();
+        return new LiteralExpressionSyntax
+        {
+            Value = value
+        };
+    }
+
+    private ExpressionSyntax ParseGroupExpression()
+    {
+        var left = NextToken();
+        var expression = ParseExpression();
+        var right = MatchToken(SyntaxType.CloseGroup);
+        return new BracketExpression()
+        {
+            Open = left,
+            Close = right,
+            Expression = expression
+        };
+    }
 }
