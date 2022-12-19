@@ -86,6 +86,24 @@ public static class SyntaxUtils
         }
     }
 
+    public static IEnumerable<SyntaxType> BinaryOperatorTokens
+    {
+        get
+        {
+            var types = (SyntaxType[]) Enum.GetValues(typeof(SyntaxType));
+            return types.Where(type => GetBinaryOperatorPrecedence(type) > 0);
+        }
+    }
+
+    public static IEnumerable<SyntaxType> UnaryOperatorTokens
+    {
+        get
+        {
+            var types = (SyntaxType[]) Enum.GetValues(typeof(SyntaxType));
+            return types.Where(type => GetUnaryOperatorPrecedence(type) > 0);
+        }
+    }
+
     public static SyntaxType GetKeywordType(string text)
     {
         switch (text)
