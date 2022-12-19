@@ -10,6 +10,7 @@ using Theta.CodeAnalysis.Syntax;
 public static class SyntaxUtils
 {
 
+    // Some random number, just make sure it doesn't go to negative
     public const int Strongest = 100;
 
     public static int GetUnaryOperatorPrecedence(this SyntaxType type)
@@ -58,6 +59,51 @@ public static class SyntaxUtils
         }
     }
 
+    public static IEnumerable<SyntaxType> OperatorTokens
+    {
+        get
+        {
+            yield return SyntaxType.AmpersandAmpersandToken;
+            yield return SyntaxType.PipePipeToken;
+            yield return SyntaxType.DoubleEqualsToken;
+            yield return SyntaxType.BangEqualsToken;
+            yield return SyntaxType.TripleEqualsToken;
+            yield return SyntaxType.BangDoubleEqualsToken;
+            yield return SyntaxType.GreaterOrEqualsToken;
+            yield return SyntaxType.LessOrEqualsToken;
+            yield return SyntaxType.GreaterToken;
+            yield return SyntaxType.LessToken;
+            yield return SyntaxType.LessEqualsGreaterToken;
+            yield return SyntaxType.PlusToken;
+            yield return SyntaxType.MinusToken;
+            yield return SyntaxType.StarToken;
+            yield return SyntaxType.SlashToken;
+            yield return SyntaxType.PercentToken;
+            yield return SyntaxType.HatToken;
+            yield return SyntaxType.PlusToken;
+            yield return SyntaxType.MinusToken;
+            yield return SyntaxType.BangToken;
+        }
+    }
+
+    public static IEnumerable<SyntaxType> BinaryOperatorTokens
+    {
+        get
+        {
+            var types = (SyntaxType[]) Enum.GetValues(typeof(SyntaxType));
+            return types.Where(type => GetBinaryOperatorPrecedence(type) > 0);
+        }
+    }
+
+    public static IEnumerable<SyntaxType> UnaryOperatorTokens
+    {
+        get
+        {
+            var types = (SyntaxType[]) Enum.GetValues(typeof(SyntaxType));
+            return types.Where(type => GetUnaryOperatorPrecedence(type) > 0);
+        }
+    }
+
     public static SyntaxType GetKeywordType(string text)
     {
         switch (text)
@@ -76,5 +122,37 @@ public static class SyntaxUtils
     public static bool IsBoolean(this SyntaxType type)
     {
         return type == SyntaxType.TrueKeyword || type == SyntaxType.FalseKeyword;
+    }
+
+    public static string? GetSyntaxText(this SyntaxType type)
+    {
+        return type switch
+        {
+            SyntaxType.EqualsToken => "=",
+            SyntaxType.PlusToken => "+",
+            SyntaxType.MinusToken => "-",
+            SyntaxType.StarToken => "*",
+            SyntaxType.SlashToken => "/",
+            SyntaxType.PercentToken => "%",
+            SyntaxType.HatToken => "^",
+            SyntaxType.BangToken => "!",
+            SyntaxType.AmpersandAmpersandToken => "&&",
+            SyntaxType.PipePipeToken => "||",
+            SyntaxType.DoubleEqualsToken => "==",
+            SyntaxType.BangEqualsToken => "!=",
+            SyntaxType.TripleEqualsToken => "===",
+            SyntaxType.BangDoubleEqualsToken => "!==",
+            SyntaxType.LessEqualsGreaterToken => "<=>",
+            SyntaxType.GreaterOrEqualsToken => ">=",
+            SyntaxType.LessOrEqualsToken => "<=",
+            SyntaxType.LessToken => "<",
+            SyntaxType.GreaterToken => ">",
+            SyntaxType.OpenGroup => "(",
+            SyntaxType.CloseGroup => ")",
+            SyntaxType.TrueKeyword => "true",
+            SyntaxType.FalseKeyword => "false",
+            SyntaxType.NullKeyword => "null",
+            _ => null
+        };
     }
 }

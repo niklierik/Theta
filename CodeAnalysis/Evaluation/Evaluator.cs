@@ -125,9 +125,23 @@ public sealed class Evaluator
                     case BoundBinaryOperatorType.BoolOr:
                         return (dynamic) left || (dynamic) right;
                     case BoundBinaryOperatorType.Equality:
-                        return Equals(left, right);
+                        try
+                        {
+                            return (dynamic) left == (dynamic) right;
+                        }
+                        catch
+                        {
+                            return Equals(left, right);
+                        }
                     case BoundBinaryOperatorType.Inequality:
-                        return !Equals(left, right);
+                        try
+                        {
+                            return (dynamic) left != (dynamic) right;
+                        }
+                        catch
+                        {
+                            return !Equals(left, right);
+                        }
                     case BoundBinaryOperatorType.RefEquality:
                         return ReferenceEquals(left, right);
                     case BoundBinaryOperatorType.RefInequality:

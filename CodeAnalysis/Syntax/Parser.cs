@@ -202,7 +202,7 @@ internal sealed class Parser
                 NextToken();
                 return new LiteralExpressionSyntax { Value = null };
         }
-        var literalToken = MatchToken(SyntaxType.Literal);
+        var literalToken = MatchToken(SyntaxType.NumberToken);
 
         return new LiteralExpressionSyntax()
         {

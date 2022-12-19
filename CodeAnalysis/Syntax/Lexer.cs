@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Theta.CodeAnalysis.Diagnostics;
 using Theta.CodeAnalysis;
+using System.Globalization;
 
 public sealed class Lexer : IEnumerable<SyntaxToken>
 {
@@ -43,7 +44,10 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
         {
             substr = _text.Substring(_pos, text.Length);
         }
-        catch { }
+        catch
+        {
+            return false;
+        }
         return substr == text;
     }
 
@@ -62,14 +66,18 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
 
     public SyntaxToken Lex()
     {
+        if (CultureInfo.CurrentCulture != CultureInfo.InvariantCulture)
+        {
+            throw new Exception("Lexer can only work if the current culture is invariant.");
+        }
         if (_pos >= _text.Length)
         {
             return new SyntaxToken(SyntaxType.EndOfFile) { Position = _text.Length, Text = "" };
         }
-        if (char.IsDigit(Current))
+        if (char.IsDigit(Current) || (Current == '.' && char.IsDigit(Next)))
         {
             var start = _pos;
-            var integer = true;
+            var integer = Current != '.';
             while (char.IsDigit(Current) || ((Current is '.' or '_') && char.IsDigit(Next)))
             {
                 if (Current == '.')
@@ -86,7 +94,7 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
                 {
                     Diagnostics.ReportInvalidInt64(text, new(start, length));
                 }
-                return new SyntaxToken(SyntaxType.Literal) { Position = start, Text = text, Value = res };
+                return new SyntaxToken(SyntaxType.NumberToken) { Position = start, Text = text, Value = res };
             }
             else
             {
@@ -94,7 +102,7 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
                 {
                     Diagnostics.ReportInvalidDouble(text, new(start, length));
                 }
-                return new SyntaxToken(SyntaxType.Literal) { Position = start, Text = text, Value = res };
+                return new SyntaxToken(SyntaxType.NumberToken) { Position = start, Text = text, Value = res };
             }
         }
         if (char.IsWhiteSpace(Current))
@@ -216,7 +224,7 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
         while (true)
         {
             var token = Lex();
-            yield return token;
+            yield return token; 
             if (token.Type == SyntaxType.EndOfFile)
             {
                 break;
@@ -227,14 +235,6 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
 
     IEnumerator IEnumerable.GetEnumerator()
     {
-        while (true)
-        {
-            var token = Lex();
-            yield return token;
-            if (token.Type == SyntaxType.EndOfFile)
-            {
-                break;
-            }
-        }
+        return GetEnumerator();
     }
 }
