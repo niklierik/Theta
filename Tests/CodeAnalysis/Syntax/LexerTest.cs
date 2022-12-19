@@ -53,7 +53,7 @@ public class LexerTest
 
     public static IEnumerable<object[]> GetConcreteTokensData()
     {
-        return Enum.GetValues(typeof(SyntaxType)).Cast<SyntaxType>().Select(t => new object[] { t, t.GetSyntaxText() ?? "" }).Where(array => array[1] is not null);
+        return Enum.GetValues(typeof(SyntaxType)).Cast<SyntaxType>().Select(t => new object?[] { t, t.GetSyntaxText() }).Where(array => array[1] is not null);
     }
 
 
