@@ -1,4 +1,5 @@
-﻿using Theta.CodeAnalysis;
+﻿using System.Globalization;
+using Theta.CodeAnalysis;
 using Theta.CodeAnalysis.Syntax;
 
 namespace Theta.Tests.CodeAnalysis;
@@ -9,12 +10,13 @@ public class SyntaxUtilsTest
     [MemberData(nameof(GetSyntaxTypes))]
     public void SyntaxUtils_GetText_RoundTrips(SyntaxType type)
     {
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
         var text = type.GetSyntaxText();
         if (text is null)
         {
             return;
         }
-        var tokens = new Lexer(text);
+        var tokens = new Lexer(text).Where(token => token.Type != SyntaxType.EndOfFile);
         var token = Assert.Single(tokens) as SyntaxToken;
         Assert.NotNull(token);
         Assert.Equal(type, token.Type);

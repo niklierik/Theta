@@ -1,3 +1,4 @@
+using System.Globalization;
 using Theta.CodeAnalysis.Syntax;
 
 namespace Theta.Tests.CodeAnalysis.Syntax;
@@ -8,8 +9,8 @@ public class LexerTest
     [MemberData(nameof(GetTokensData))]
     public void Lexers_Lexes_Token(SyntaxType type, string text)
     {
-        var tokens = new Lexer(text);
-
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+        var tokens = new Lexer(text).Where(token => token.Type != SyntaxType.EndOfFile);
         var token = Assert.Single(tokens);
         Assert.Equal(type, token.Type);
         Assert.Equal(text, (token as SyntaxToken)?.Text ?? null);
@@ -19,13 +20,24 @@ public class LexerTest
     [MemberData(nameof(GetTokenPairsData))]
     public void Lexers_Lexes_TokenPairs(SyntaxType t1Type, string t1Text, SyntaxType t2Type, string t2Text)
     {
-        var tokens = new Lexer(t1Text + " " + t2Text).ToList();
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+        var tokens = new Lexer(t1Text + " " + t2Text).Where(token => token.Type != SyntaxType.EndOfFile).ToList();
         Assert.Equal(3, tokens.Count);
         Assert.Equal(tokens[0].Type, t1Type);
         Assert.Equal(tokens[0].Text, t1Text);
         Assert.Equal(SyntaxType.Whitespace, tokens[1].Type);
         Assert.Equal(tokens[2].Type, t2Type);
         Assert.Equal(tokens[2].Text, t2Text);
+    }
+
+    [Fact]
+    public void Lexers_LexDoubleWithOperators()
+    {
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+        var lexer = new Lexer("5.0 + 2.0").Where(token => token.Type != SyntaxType.Whitespace).Where(token => token.Type != SyntaxType.EndOfFile).ToArray();
+        Assert.Equal("5.0", lexer[0].Text);
+        Assert.Equal("+", lexer[1].Text);
+        Assert.Equal("2.0", lexer[2].Text);
     }
 
     public static IEnumerable<object[]> GetTokensData()
