@@ -52,7 +52,7 @@ public sealed class Binder
     private BoundExpression BindLiteralExpression(LiteralExpressionSyntax literal)
     {
         var value = literal.Value;
-        return new BoundLiteralExpression(value);
+        return new BoundLiteralExpression(value, literal.Span);
     }
 
     private BoundExpression? BindBinaryExpression(BinaryExpressionSyntax binary)
@@ -60,23 +60,23 @@ public sealed class Binder
         var left = BindExpression(binary.Left);
         if (left is null)
         {
-            Diagnostics.ReportBinderError(binary.Operator.Span);
+            Diagnostics.ReportBinderError(binary.Span);
             return null;
         }
         var right = BindExpression(binary.Right);
         if (right is null)
         {
-            Diagnostics.ReportBinderError(binary.Operator.Span);
+            Diagnostics.ReportBinderError(binary.Span);
             return null;
         }
         var op = BoundBinaryOperator.Bind(binary.Operator.Type, left.Type, right.Type);
         if (op is null)
         {
             // Diagnostics.Add($"ERROR: Binary expression does not exist for {binary.Operator.Type} with operands {left.Type} and {right.Type}.");
-            Diagnostics.ReportInvalidBinaryExpression(binary, left, right, binary.Operator.Span);
+            Diagnostics.ReportInvalidBinaryExpression(binary, left, right, binary.Span);
             return null;
         }
-        return new BoundBinaryExpression(left, op, right);
+        return new BoundBinaryExpression(left, op, right, binary.Span);
     }
 
     private BoundExpression? BindUnaryExpression(UnaryExpressionSyntax unary)
@@ -84,16 +84,16 @@ public sealed class Binder
         var boundOperand = BindExpression(unary.Operand);
         if (boundOperand is null)
         {
-            Diagnostics.ReportBinderError(unary.Operator.Span);
+            Diagnostics.ReportBinderError(unary.Span);
             return null;
         }
         var op = BoundUnaryOperator.Bind(unary.Operator.Type, boundOperand.Type);
         if (op is null)
         {
-            Diagnostics.ReportInvalidUnaryExpression(unary, boundOperand, unary.Operator.Span);
+            Diagnostics.ReportInvalidUnaryExpression(unary, boundOperand, unary.Span);
             return null;
         }
-        return new BoundUnaryExpression(boundOperand, op);
+        return new BoundUnaryExpression(boundOperand, op, unary.Span);
     }
 
 
@@ -103,10 +103,10 @@ public sealed class Binder
         var variable = Vars.FirstOrDefault(v => v.Key.Name == name);
         if (variable.Key is null)
         {
-            Diagnostics.ReportUndefinedName(name, namedExpression.IdentifierToken.Span);
-            return new BoundLiteralExpression(null);
+            Diagnostics.ReportUndefinedName(name, namedExpression.Span);
+            return new BoundLiteralExpression(null, namedExpression.Span);
         }
-        return new BoundVariableExpression(variable.Key);
+        return new BoundVariableExpression(variable.Key, namedExpression.Span);
     }
 
     private BoundExpression? BindAssignmentExpression(AssignmentExpressionSyntax assignmentExpression)
@@ -117,10 +117,10 @@ public sealed class Binder
         var variable = Vars.FirstOrDefault(v => v.Key.Name == name);
         if (variable.Key is not null && !variable.Key.Type.IsAssignableFrom(expression?.Type ?? typeof(void)))
         {
-            Diagnostics.ReportInvalidCast(variable.Key, expression, assignmentExpression.Identifier.Span);
-            return new BoundLiteralExpression(null);
+            Diagnostics.ReportInvalidCast(variable.Key, expression, assignmentExpression.Span);
+            return new BoundLiteralExpression(null, assignmentExpression.Span);
         }
-        return new BoundAssignmentExpression(name, expression);
+        return new BoundAssignmentExpression(name, expression, assignmentExpression.Span);
     }
 
 }

@@ -14,6 +14,8 @@ public sealed class Diagnostic
 
     public MessageType MessageType { get; }
 
+    public string Input { get; set; } = string.Empty; 
+
     public override string ToString()
     {
         return MessageType.Message(this);

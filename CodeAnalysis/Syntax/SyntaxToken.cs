@@ -26,5 +26,5 @@ public sealed class SyntaxToken : SyntaxNode
 
     public override IEnumerable<SyntaxNode> Children => Enumerable.Empty<SyntaxNode>();
 
-    public TextSpan Span => new(Position, Text.Length);
+    public override TextSpan Span => new(Position, Text.Length);
 }

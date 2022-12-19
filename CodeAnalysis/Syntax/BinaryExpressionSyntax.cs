@@ -1,4 +1,6 @@
-﻿namespace Theta.CodeAnalysis.Syntax;
+﻿using Theta.CodeAnalysis.Diagnostics;
+
+namespace Theta.CodeAnalysis.Syntax;
 
 public sealed class BinaryExpressionSyntax : ExpressionSyntax
 {
@@ -8,6 +10,8 @@ public sealed class BinaryExpressionSyntax : ExpressionSyntax
     public required ExpressionSyntax Right { get; init; }
 
     public override SyntaxType Type => SyntaxType.BinaryExpression;
+
+    public override TextSpan Span => new(base.Span.Start, base.Span.Length - 1);
 
     public override IEnumerable<SyntaxNode> Children
     {

@@ -11,8 +11,16 @@ using System.Globalization;
 
 public sealed class Lexer : IEnumerable<SyntaxToken>
 {
-    private readonly string _text;
+    private readonly string _input;
     private int _pos;
+
+
+    private SyntaxType _type;
+    private int _start;
+    private object? _value;
+    private string _substr;
+
+
     public DiagnosticBag Diagnostics { get; private set; } = new();
 
     public char CharAt(int pos)
@@ -21,11 +29,11 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
         {
             return '\0';
         }
-        if (pos >= _text.Length)
+        if (pos >= _input.Length)
         {
             return '\0';
         }
-        return _text[pos];
+        return _input[pos];
     }
 
     public char Prev => CharAt(_pos - 1);
@@ -42,7 +50,7 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
         string substr = "";
         try
         {
-            substr = _text.Substring(_pos, text.Length);
+            substr = _input.Substring(_pos, text.Length);
         }
         catch
         {
@@ -54,8 +62,9 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
 
     public Lexer(string text)
     {
-        _text = text;
+        _input = text;
         _pos = 0;
+        _substr = "";
     }
 
 
@@ -64,19 +73,18 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
         _pos++;
     }
 
-    public SyntaxToken Lex()
+    private void CheckInvariantCulture()
     {
         if (CultureInfo.CurrentCulture != CultureInfo.InvariantCulture)
         {
             throw new Exception("Lexer can only work if the current culture is invariant.");
         }
-        if (_pos >= _text.Length)
-        {
-            return new SyntaxToken(SyntaxType.EndOfFile) { Position = _text.Length, Text = "" };
-        }
+    }
+
+    private SyntaxToken? ReadNumber()
+    {
         if (char.IsDigit(Current) || (Current == '.' && char.IsDigit(Next)))
         {
-            var start = _pos;
             var integer = Current != '.';
             while (char.IsDigit(Current) || ((Current is '.' or '_') && char.IsDigit(Next)))
             {
@@ -86,36 +94,48 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
                 }
                 _pos++;
             }
-            var length = _pos - start;
-            var text = _text.Substring(start, length);
+            var length = _pos - _start;
+            _substr = _input.Substring(_start, length);
+            _type = SyntaxType.NumberToken;
             if (integer)
             {
-                if (!long.TryParse(text.Replace("_", ""), out var res))
+                if (!long.TryParse(_substr.Replace("_", ""), out var res))
                 {
-                    Diagnostics.ReportInvalidInt64(text, new(start, length));
+                    Diagnostics.ReportInvalidInt64(_substr, new(_start, length));
                 }
-                return new SyntaxToken(SyntaxType.NumberToken) { Position = start, Text = text, Value = res };
+                _value = res;
+                return new SyntaxToken(_type) { Position = _start, Text = _substr, Value = _value };
             }
             else
             {
-                if (!double.TryParse(text.Replace("_", ""), out var res))
+                if (!double.TryParse(_substr.Replace("_", ""), out var res))
                 {
-                    Diagnostics.ReportInvalidDouble(text, new(start, length));
+                    Diagnostics.ReportInvalidDouble(_substr, new(_start, length));
                 }
-                return new SyntaxToken(SyntaxType.NumberToken) { Position = start, Text = text, Value = res };
+                _value = res;
+                return new SyntaxToken(_type) { Position = _start, Text = _substr, Value = _value };
             }
         }
+        return null;
+    }
+
+    private SyntaxToken? ReadWhitespaces()
+    {
         if (char.IsWhiteSpace(Current))
         {
-            var start = _pos;
             while (char.IsWhiteSpace(Current))
             {
                 _pos++;
             }
-            var length = _pos - start;
-            var text = _text.Substring(start, length);
-            return new SyntaxToken(SyntaxType.Whitespace) { Position = start, Text = text };
+            var length = _pos - _start;
+            _substr = _input.Substring(_start, length);
+            return new SyntaxToken(SyntaxType.Whitespace) { Position = _start, Text = _substr };
         }
+        return null;
+    }
+
+    private SyntaxToken? ReadWord()
+    {
         if (char.IsLetter(Current) || Current == '_')
         {
             var start = _pos;
@@ -124,99 +144,87 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
                 _pos++;
             }
             var length = _pos - start;
-            var text = _text.Substring(start, length);
-            var type = SyntaxUtils.GetKeywordType(text);
-            return new SyntaxToken(type) { Position = start, Text = text };
+            _substr = _input.Substring(start, length);
+            var type = SyntaxUtils.GetKeywordType(_substr);
+            return new SyntaxToken(type) { Position = start, Text = _substr };
         }
-        var ogpos = _pos;
-        if (Match("&&"))
+        return null;
+    }
+
+    private SyntaxToken? ReadFixText(SyntaxType type, string text)
+    {
+        if (string.IsNullOrEmpty(text))
         {
-            _pos += 2;
-            return new SyntaxToken(SyntaxType.AmpersandAmpersandToken) { Position = ogpos, Text = "&&" };
+            return null;
         }
-        if (Match("||"))
+        if (Match(text))
         {
-            _pos += 2;
-            return new SyntaxToken(SyntaxType.PipePipeToken) { Position = ogpos, Text = "||" };
+            _pos += text.Length;
+            return new SyntaxToken(type) { Position = _start, Text = text };
         }
-        if (Match("<=>"))
+        return null;
+    }
+
+    // Tries reading tokens in this order.
+    // If it finds one, immeadietly returns it (therefore, => has to come first than = or >)
+    private List<SyntaxType> ReadTypes { get; init; } = new()
+    {
+        SyntaxType.AmpersandAmpersandToken,
+        SyntaxType.PipePipeToken,
+        SyntaxType.LessEqualsGreaterToken,
+        SyntaxType.ThinArrowToken,
+        SyntaxType.ThickArrowToken,
+        SyntaxType.GreaterOrEqualsToken,
+        SyntaxType.LessOrEqualsToken,
+        SyntaxType.TripleEqualsToken,
+        SyntaxType.BangDoubleEqualsToken,
+        SyntaxType.DoubleEqualsToken,
+        SyntaxType.BangEqualsToken,
+        SyntaxType.PlusToken,
+        SyntaxType.MinusToken,
+        SyntaxType.StarToken,
+        SyntaxType.SlashToken,
+        SyntaxType.PercentToken,
+        SyntaxType.HatToken,
+        SyntaxType.BangToken,
+        SyntaxType.LessToken,
+        SyntaxType.GreaterToken,
+        SyntaxType.EqualsToken,
+        SyntaxType.OpenGroup,
+        SyntaxType.CloseGroup,
+        SyntaxType.OpenBlock,
+        SyntaxType.CloseBlock,
+        SyntaxType.OpenArray,
+        SyntaxType.CloseArray,
+    };
+
+    private SyntaxToken? ReadConcreteTokens()
+    {
+        foreach (var type in ReadTypes)
         {
-            _pos += 3;
-            return new SyntaxToken(SyntaxType.LessEqualsGreaterToken) { Position = ogpos, Text = "<=>" };
+            var token = ReadFixText(type, type.GetSyntaxText() ?? "");
+            if (token is not null)
+            {
+                return token;
+            }
         }
-        if (Match(">="))
+        return null;
+    }
+
+    public SyntaxToken Lex()
+    {
+        CheckInvariantCulture();
+        _start = _pos;
+        var token = ReadNumber();
+        token ??= ReadWhitespaces();
+        token ??= ReadWord();
+        token ??= ReadConcreteTokens();
+        token ??= Current == '\0' ? new SyntaxToken(SyntaxType.EndOfFile) { Position = _start, Text = "" } : null;
+        if (token is null)
         {
-            _pos += 2;
-            return new SyntaxToken(SyntaxType.GreaterOrEqualsToken) { Position = ogpos, Text = ">=" };
+            Diagnostics.ReportInvalidCharacter(Current, _pos);
         }
-        if (Match("<="))
-        {
-            _pos += 2;
-            return new SyntaxToken(SyntaxType.LessOrEqualsToken) { Position = ogpos, Text = "<=" };
-        }
-        if (Match("==="))
-        {
-            _pos += 3;
-            return new SyntaxToken(SyntaxType.TripleEqualsToken) { Position = ogpos, Text = "===" };
-        }
-        if (Match("!=="))
-        {
-            _pos += 3;
-            return new SyntaxToken(SyntaxType.BangDoubleEqualsToken) { Position = ogpos, Text = "!==" };
-        }
-        if (Match("=="))
-        {
-            _pos += 2;
-            return new SyntaxToken(SyntaxType.DoubleEqualsToken) { Position = ogpos, Text = "==" };
-        }
-        if (Match("!="))
-        {
-            _pos += 2;
-            return new SyntaxToken(SyntaxType.BangEqualsToken) { Position = ogpos, Text = "!=" };
-        }
-        switch (Current)
-        {
-            case '+':
-                return new SyntaxToken(SyntaxType.PlusToken) { Position = _pos++, Text = "+" };
-            case '-':
-                return new SyntaxToken(SyntaxType.MinusToken) { Position = _pos++, Text = "-" };
-            case '*':
-                return new SyntaxToken(SyntaxType.StarToken) { Position = _pos++, Text = "*" };
-            case '/':
-                return new SyntaxToken(SyntaxType.SlashToken) { Position = _pos++, Text = "/" };
-            case '%':
-                return new SyntaxToken(SyntaxType.PercentToken) { Position = _pos++, Text = "%" };
-            case '^':
-                return new SyntaxToken(SyntaxType.HatToken) { Position = _pos++, Text = "^" };
-            case '(':
-                return new SyntaxToken(SyntaxType.OpenGroup) { Position = _pos++, Text = "(" };
-            case ')':
-                return new SyntaxToken(SyntaxType.CloseGroup) { Position = _pos++, Text = ")" };
-            case '!':
-                return new SyntaxToken(SyntaxType.BangToken) { Position = _pos++, Text = "!" };
-            case '<':
-                return new SyntaxToken(SyntaxType.LessToken) { Position = _pos++, Text = "<" };
-            case '>':
-                return new SyntaxToken(SyntaxType.GreaterToken) { Position = _pos++, Text = ">" };
-            case '=':
-                return new SyntaxToken(SyntaxType.EqualsToken) { Position = _pos++, Text = "=" };
-                /*
-                case '&':
-                    if (Next == '&')
-                    {
-                        return new SyntaxToken(SyntaxType.AmpersandAmpersandToken) { Position = _pos += 2, Text = "&&" };
-                    }
-                    break;
-                case '|':
-                    if (Next == '|')
-                    {
-                        return new SyntaxToken(SyntaxType.PipePipeToken) { Position = _pos += 2, Text = "||" };
-                    }
-                    break;
-                */
-        }
-        Diagnostics.ReportInvalidCharacter(Current, _pos);
-        return new SyntaxToken(SyntaxType.Invalid) { Position = _pos++, Text = _text.Substring(_pos - 1, 1) };
+        return token ?? new SyntaxToken(SyntaxType.InvalidToken) { Position = _start, Text = Current.ToString() };
     }
 
     public IEnumerator<SyntaxToken> GetEnumerator()
@@ -224,7 +232,7 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
         while (true)
         {
             var token = Lex();
-            yield return token; 
+            yield return token;
             if (token.Type == SyntaxType.EndOfFile)
             {
                 break;

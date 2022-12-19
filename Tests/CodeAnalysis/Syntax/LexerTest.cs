@@ -1,12 +1,17 @@
 using System.Globalization;
+using Theta.CodeAnalysis;
 using Theta.CodeAnalysis.Syntax;
+using System.Linq;
 
 namespace Theta.Tests.CodeAnalysis.Syntax;
 
 public class LexerTest
 {
+
+
     [Theory]
     [MemberData(nameof(GetTokensData))]
+    [MemberData(nameof(GetConcreteTokensData))]
     public void Lexers_Lexes_Token(SyntaxType type, string text)
     {
         CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
@@ -15,6 +20,7 @@ public class LexerTest
         Assert.Equal(type, token.Type);
         Assert.Equal(text, (token as SyntaxToken)?.Text ?? null);
     }
+
 
     [Theory]
     [MemberData(nameof(GetTokenPairsData))]
@@ -45,6 +51,12 @@ public class LexerTest
         return GetTokens().Select(input => new object[] { input.type, input.text });
     }
 
+    public static IEnumerable<object[]> GetConcreteTokensData()
+    {
+        return Enum.GetValues(typeof(SyntaxType)).Cast<SyntaxType>().Select(t => new object[] { t, t.GetSyntaxText() ?? "" }).Where(array => array[1] is not null);
+    }
+
+
     public static IEnumerable<object[]> GetTokenPairsData()
     {
         return GetTokenPairs().Select(input => new object[] { input.t1Type, input.t1Text, input.t2Type, input.t2Text });
@@ -71,31 +83,36 @@ public class LexerTest
 
     public static IEnumerable<(SyntaxType type, string text)> GetTokens()
     {
-        // Concrete tokens
-        yield return new(SyntaxType.TrueKeyword, "true");
-        yield return new(SyntaxType.FalseKeyword, "false");
-        yield return new(SyntaxType.NullKeyword, "null");
-        yield return new(SyntaxType.OpenGroup, "(");
-        yield return new(SyntaxType.CloseGroup, ")");
-        yield return new(SyntaxType.EqualsToken, "=");
-        yield return new(SyntaxType.DoubleEqualsToken, "==");
-        yield return new(SyntaxType.TripleEqualsToken, "===");
-        yield return new(SyntaxType.BangToken, "!");
-        yield return new(SyntaxType.BangEqualsToken, "!=");
-        yield return new(SyntaxType.BangDoubleEqualsToken, "!==");
-        yield return new(SyntaxType.LessToken, "<");
-        yield return new(SyntaxType.GreaterToken, ">");
-        yield return new(SyntaxType.LessOrEqualsToken, "<=");
-        yield return new(SyntaxType.GreaterOrEqualsToken, ">=");
-        yield return new(SyntaxType.LessEqualsGreaterToken, "<=>");
-        yield return new(SyntaxType.PlusToken, "+");
-        yield return new(SyntaxType.MinusToken, "-");
-        yield return new(SyntaxType.StarToken, "*");
-        yield return new(SyntaxType.SlashToken, "/");
-        yield return new(SyntaxType.PercentToken, "%");
-        yield return new(SyntaxType.HatToken, "^");
-        yield return new(SyntaxType.AmpersandAmpersandToken, "&&");
-        yield return new(SyntaxType.PipePipeToken, "||");
+        //yield return new(SyntaxType.TrueKeyword, "true");
+        //yield return new(SyntaxType.FalseKeyword, "false");
+        //yield return new(SyntaxType.NullKeyword, "null");
+        //yield return new(SyntaxType.OpenGroup, "(");
+        //yield return new(SyntaxType.CloseGroup, ")");
+        //yield return new(SyntaxType.OpenArray, "[");
+        //yield return new(SyntaxType.CloseArray, "]");
+        //yield return new(SyntaxType.OpenBlock, "{");
+        //yield return new(SyntaxType.CloseBlock, "}");
+        //yield return new(SyntaxType.ThinArrowToken, "->");
+        //yield return new(SyntaxType.ThickArrowToken, "=>");
+        //yield return new(SyntaxType.EqualsToken, "=");
+        //yield return new(SyntaxType.DoubleEqualsToken, "==");
+        //yield return new(SyntaxType.TripleEqualsToken, "===");
+        //yield return new(SyntaxType.BangToken, "!");
+        //yield return new(SyntaxType.BangEqualsToken, "!=");
+        //yield return new(SyntaxType.BangDoubleEqualsToken, "!==");
+        //yield return new(SyntaxType.LessToken, "<");
+        //yield return new(SyntaxType.GreaterToken, ">");
+        //yield return new(SyntaxType.LessOrEqualsToken, "<=");
+        //yield return new(SyntaxType.GreaterOrEqualsToken, ">=");
+        //yield return new(SyntaxType.LessEqualsGreaterToken, "<=>");
+        //yield return new(SyntaxType.PlusToken, "+");
+        //yield return new(SyntaxType.MinusToken, "-");
+        //yield return new(SyntaxType.StarToken, "*");
+        //yield return new(SyntaxType.SlashToken, "/");
+        //yield return new(SyntaxType.PercentToken, "%");
+        //yield return new(SyntaxType.HatToken, "^");
+        //yield return new(SyntaxType.AmpersandAmpersandToken, "&&");
+        //yield return new(SyntaxType.PipePipeToken, "||");
 
 
         yield return new(SyntaxType.IdentifierToken, "a");
@@ -111,4 +128,6 @@ public class LexerTest
         yield return new(SyntaxType.NumberToken, "5_000_000");
         yield return new(SyntaxType.NumberToken, "5_000_000.23");
     }
+
+
 }

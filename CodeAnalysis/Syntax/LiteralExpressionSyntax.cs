@@ -1,16 +1,23 @@
-﻿namespace Theta.CodeAnalysis.Syntax;
+﻿using Theta.CodeAnalysis.Diagnostics;
+
+namespace Theta.CodeAnalysis.Syntax;
 
 public sealed class LiteralExpressionSyntax : ExpressionSyntax
 {
 
-    public LiteralExpressionSyntax()
+    public LiteralExpressionSyntax(TextSpan span)
     {
+        Span = span;
     }
 
     public override SyntaxType Type => SyntaxType.LiteralExpression;
 
     // public required SyntaxToken LiteralToken { get; init; }
     public required object? Value { get; set; }
+
+    public override TextSpan Span { get; }
+
+    
 
     public override IEnumerable<SyntaxNode> Children
     {

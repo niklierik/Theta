@@ -21,7 +21,7 @@ internal sealed class Parser
     public Parser(string text)
     {
         var lexer = new Lexer(text);
-        _tokens = lexer.Where(x => x.Type != SyntaxType.Whitespace && x.Type != SyntaxType.Invalid).ToList();
+        _tokens = lexer.Where(x => x.Type != SyntaxType.Whitespace && x.Type != SyntaxType.InvalidToken).ToList();
         _position = 0;
         Diagnostics.InsertAll(lexer.Diagnostics);
     }
@@ -123,91 +123,76 @@ internal sealed class Parser
         return left;
     }
 
-
-
-    /*
-    private ExpressionSyntax ParseTerm()
-    {
-        var left = ParseFactor();
-        while (Current.Type is SyntaxType.Plus or SyntaxType.Minus)
-        {
-            var operatorToken = NextToken();
-            var right = ParseFactor();
-            left = new BinaryExpressionSyntax
-            {
-                Left = left,
-                Operator = operatorToken,
-                Right = right
-
-            };
-        }
-        return left;
-    }
-
-    private ExpressionSyntax ParseFactor()
-    {
-        var left = ParsePrimaryExpression();
-        while (Current.Type is SyntaxType.Star or SyntaxType.Slash or SyntaxType.Percent)
-        {
-            var operatorToken = NextToken();
-            var right = ParsePrimaryExpression();
-            left = new BinaryExpressionSyntax
-            {
-                Left = left,
-                Operator = operatorToken,
-                Right = right
-
-            };
-        }
-        return left;
-    }
-
-    private ExpressionSyntax ParseExpression()
-    {
-        return ParseTerm();
-    }
-    */
-
     public ExpressionSyntax ParsePrimaryExpression()
     {
         switch (Current.Type)
         {
             case SyntaxType.OpenGroup:
-            {
-                var left = NextToken();
-                var expression = ParseExpression();
-                var right = MatchToken(SyntaxType.CloseGroup);
-                return new BracketExpression()
-                {
-                    Open = left,
-                    Close = right,
-                    Expression = expression
-                };
-            }
+                return ParseGroupExpression();
 
             case SyntaxType.TrueKeyword:
             case SyntaxType.FalseKeyword:
-            {
-                var value = Current.Type == SyntaxType.TrueKeyword;
-                NextToken();
-                return new LiteralExpressionSyntax
-                {
-                    Value = value
-                };
-            }
-            case SyntaxType.IdentifierToken:
-                var identifierToken = NextToken();
-                return new NamedExpressionSyntax(identifierToken);
-            case SyntaxType.NullKeyword:
-                NextToken();
-                return new LiteralExpressionSyntax { Value = null };
-        }
-        var literalToken = MatchToken(SyntaxType.NumberToken);
+                return ParseBooleanExpression();
 
-        return new LiteralExpressionSyntax()
+            case SyntaxType.NullKeyword:
+                return ParseNull();
+
+            case SyntaxType.NumberToken:
+                return ParseNumberLiteral();
+            
+            case SyntaxType.IdentifierToken:
+            default:
+                return ParseNamedExpression();
+        }
+    }
+
+    private ExpressionSyntax ParseLiteral(SyntaxType type)
+    {
+        var literalToken = MatchToken(type);
+
+        return new LiteralExpressionSyntax(literalToken.Span)
         {
             Value = literalToken.Value,
         };
     }
 
+    private ExpressionSyntax ParseNumberLiteral()
+    {
+        return ParseLiteral(SyntaxType.NumberToken);
+    }
+
+    private ExpressionSyntax ParseNull()
+    {
+        NextToken();
+        return new LiteralExpressionSyntax(Current.Span) { Value = null };
+    }
+
+    private ExpressionSyntax ParseNamedExpression()
+    {
+        var identifierToken = NextToken();
+        return new NamedExpressionSyntax(identifierToken);
+    }
+
+    private ExpressionSyntax ParseBooleanExpression()
+    {
+        var value = Current.Type == SyntaxType.TrueKeyword;
+        NextToken();
+        return new LiteralExpressionSyntax(Current.Span)
+        {
+            Value = value
+        };
+    }
+
+    private ExpressionSyntax ParseGroupExpression()
+    {
+        var left = NextToken();
+        var expression = ParseExpression();
+        var right = MatchToken(SyntaxType.CloseGroup);
+        return new BracketExpression()
+        {
+            Open = left,
+            Close = right,
+            Expression = expression
+        };
+    }
 }

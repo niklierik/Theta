@@ -12,9 +12,15 @@ public struct TextSpan
 
     public int End => Start + Length;
 
+    public static TextSpan FromBounds(int start, int end)
+    {
+        var length = end - start;
+        return new(start, length);
+    }
+
     public override string ToString()
     {
-        if(Length == 0)
+        if (Length == 0)
         {
             return "";
         }
@@ -23,5 +29,10 @@ public struct TextSpan
             return $" at character {Start}";
         }
         return $" from {Start} to {End}";
+    }
+
+    public bool In(int pos)
+    {
+        return Start <= pos && pos < End;
     }
 }
