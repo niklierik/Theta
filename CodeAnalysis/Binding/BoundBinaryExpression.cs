@@ -1,4 +1,5 @@
-﻿using Theta.CodeAnalysis.Evaluation;
+﻿using Theta.CodeAnalysis.Diagnostics;
+using Theta.CodeAnalysis.Evaluation;
 using Theta.CodeAnalysis.Syntax;
 
 namespace Theta.CodeAnalysis.Binding;
@@ -6,15 +7,17 @@ namespace Theta.CodeAnalysis.Binding;
 public sealed class BoundBinaryExpression : BoundExpression
 {
 
-    public BoundBinaryExpression(BoundExpression left, BoundBinaryOperator op, BoundExpression right)
+    public BoundBinaryExpression(BoundExpression left, BoundBinaryOperator op, BoundExpression right, TextSpan span)
     {
         Left = left;
         Operator = op;
         Right = right;
+        Span = span;
     }
 
     public BoundExpression Left { get; }
     public BoundExpression Right { get; }
+    public override TextSpan Span { get; }
     public BoundBinaryOperator Operator { get; }
 
     public override Type Type => Operator.ResultType;
@@ -95,7 +98,7 @@ public sealed class BoundBinaryExpression : BoundExpression
                 }
         }
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
-        eval.Diagnostics.ReportUndefinedBinaryBehaviour(this);
+        eval.Diagnostics.ReportUndefinedBinaryBehaviour(this, Span);
         return null;
     }
 

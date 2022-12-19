@@ -24,26 +24,26 @@ internal static class Program
             var diagnostics = new DiagnosticBag();
             " > ".Log(ConsoleColor.DarkGray, false);
 
-            var line = Console.ReadLine() ?? "";
-            if (line.ToLower() == "#exit()")
+            var input = Console.ReadLine() ?? "";
+            if (input.ToLower() == "#exit()")
             {
                 return;
             }
-            if (line.ToLower() == "#printtree()")
+            if (input.ToLower() == "#printtree()")
             {
                 printTree = !printTree;
                 Console.Write("Printing tree: ");
                 printTree.OnOff().Log(printTree.GoodBadColor());
                 continue;
             }
-            if (line.ToLower() == "#clear()")
+            if (input.ToLower() == "#clear()")
             {
                 Console.Clear();
                 continue;
             }
-            var result = Compilation.EvalLine(line, vars, printTree);
+            var result = Compilation.EvalLine(input, vars, printTree);
             diagnostics.InsertAll(result.Diagnostics);
-            ShowErrors(diagnostics);
+            ShowErrors(diagnostics, input);
             if (diagnostics.HasError)
             {
                 continue;
@@ -55,8 +55,8 @@ internal static class Program
         }
     }
 
-    private static void ShowErrors(DiagnosticBag diagnostics)
+    private static void ShowErrors(DiagnosticBag diagnostics, string input)
     {
-        diagnostics.ReportAll();
+        diagnostics.ReportAll(input);
     }
 }

@@ -1,15 +1,17 @@
 ﻿namespace Theta.CodeAnalysis.Binding;
 
 using System;
+using Theta.CodeAnalysis.Diagnostics;
 using Theta.CodeAnalysis.Evaluation;
 using Theta.CodeAnalysis.Syntax;
 
 public sealed class BoundUnaryExpression : BoundExpression
 {
-    public BoundUnaryExpression(BoundExpression operand, BoundUnaryOperator op)
+    public BoundUnaryExpression(BoundExpression operand, BoundUnaryOperator op, TextSpan span)
     {
         Operand = operand;
         Operator = op;
+        Span = span;
     }
 
     public override Type Type => Operator.ResultType;
@@ -18,13 +20,14 @@ public sealed class BoundUnaryExpression : BoundExpression
 
     public BoundExpression Operand { get; }
     public BoundUnaryOperator Operator { get; }
+    public override TextSpan Span { get; }
 
     public override object? Evaluate(Evaluator eval)
     {
         var operand = eval.EvaluateExpression(Operand);
         if (operand is null)
         {
-            eval.Diagnostics.ReportUnexpectedNull();
+            eval.Diagnostics.ReportUnexpectedNull(Span);
             return null;
         }
         switch (Operator.Type)
@@ -36,7 +39,7 @@ public sealed class BoundUnaryExpression : BoundExpression
             case BoundUnaryOperatorType.Minus:
                 return -(dynamic) operand;
             default:
-                eval.Diagnostics.ReportUndefinedUnaryBehaviour(this);
+                eval.Diagnostics.ReportUndefinedUnaryBehaviour(this, Span);
                 return null;
         }
     }

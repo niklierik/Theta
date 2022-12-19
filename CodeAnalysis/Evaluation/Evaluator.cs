@@ -28,7 +28,7 @@ public sealed class Evaluator
     {
         return EvaluateExpression(_tree);
     }
-    
+
     public object? EvaluateExpression(BoundExpression? root)
     {
         try
@@ -41,7 +41,7 @@ public sealed class Evaluator
         }
         catch (Exception ex)
         {
-            Diagnostics.ReportException(ex);
+            Diagnostics.ReportException(ex, root?.Span ?? new());
             return null;
         }
     }

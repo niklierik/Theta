@@ -50,42 +50,42 @@ public sealed class DiagnosticBag : IEnumerable<Diagnostic>
         Report(span, $"Unexpected token <{currentType}> expected <{expected}>.");
     }
 
-    public void ReportUnexpectedNull()
+    public void ReportUnexpectedNull(TextSpan span)
     {
-        Report(new(), "Unexpected null literal as an operand for unary expression.");
+        Report(span, "Unexpected null literal as an operand for unary expression.");
     }
 
-    public void ReportUndefinedUnaryBehaviour(BoundUnaryExpression unary)
+    public void ReportUndefinedUnaryBehaviour(BoundUnaryExpression unary, TextSpan span)
     {
-        Report(new(), $"Unary operator {unary.Operator.Type} has undefined behaviour.");
+        Report(span, $"Unary operator {unary.Operator.Type} with operand {unary.Operand.Type} has undefined behaviour.");
     }
 
-    public void ReportBinderError(TextSpan span = new())
+    public void ReportBinderError(TextSpan span)
     {
         Report(span, $"Cannot bind binary expression.");
     }
 
-    public void ReportInvalidBinaryExpression(BinaryExpressionSyntax binary, BoundExpression left, BoundExpression right, TextSpan span = new())
+    public void ReportInvalidBinaryExpression(BinaryExpressionSyntax binary, BoundExpression left, BoundExpression right, TextSpan span)
     {
         Report(span, $"Binary expression does not exist for {binary.Operator.Type} with operands {left.Type} and {right.Type}.");
     }
 
-    public void ReportInvalidUnaryExpression(UnaryExpressionSyntax unary, BoundExpression boundOperand, TextSpan span = new())
+    public void ReportInvalidUnaryExpression(UnaryExpressionSyntax unary, BoundExpression boundOperand, TextSpan span)
     {
         Report(span, $"Unary operator does not exist for {unary.Operator.Type} with operand type {boundOperand.Type}.");
     }
 
-    public void ReportUndefinedBinaryBehaviour(BoundBinaryExpression binary, TextSpan span = new())
+    public void ReportUndefinedBinaryBehaviour(BoundBinaryExpression binary, TextSpan span)
     {
-        Report(span, $"Binary operator {binary.Operator.Type} has undefined behaviour.");
+        Report(span, $"Binary operator {binary.Operator.Type} with operands {binary.Left.Type} and {binary.Right.Type} has undefined behaviour.");
     }
 
-    public void ReportInvalidExpression(TextSpan span = new())
+    public void ReportInvalidExpression(TextSpan span)
     {
         Report(span, "Cannot parse expression.");
     }
 
-    public void ReportException(Exception ex, TextSpan span = new(), MessageType type = MessageType.Error)
+    public void ReportException(Exception ex, TextSpan span, MessageType type = MessageType.Error)
     {
         Report(span, ex.ToString(), type);
     }
@@ -98,12 +98,12 @@ public sealed class DiagnosticBag : IEnumerable<Diagnostic>
         }
     }
 
-    public void ReportAll()
+    public void ReportAll(string input)
     {
-        ReportAll(Console.WriteLine);
+        ReportAll(Console.WriteLine, input);
     }
 
-    public void ReportAll(Action<string>? write)
+    public void ReportAll(Action<string>? write, string input)
     {
         if (write is null)
         {
@@ -113,6 +113,18 @@ public sealed class DiagnosticBag : IEnumerable<Diagnostic>
         {
             Console.ForegroundColor = d.MessageType.GetColor();
             write(d.ToString());
+            WriteWrongLine(input, d);
+            write(Environment.NewLine);
+        }
+        Console.ResetColor();
+    }
+
+    public void WriteWrongLine(string input, Diagnostic diagnostic)
+    {
+        for (int i = 0; i < input.Length; i++)
+        {
+            Console.ForegroundColor = (diagnostic.Span.In(i)) ? diagnostic.MessageType.GetColor() : ConsoleColor.Gray;
+            Console.Write(input[i]);
         }
         Console.ResetColor();
     }
@@ -124,6 +136,6 @@ public sealed class DiagnosticBag : IEnumerable<Diagnostic>
 
     public void ReportInvalidCast(CodeAnalysis.VariableSymbol key, BoundExpression? expression, TextSpan span)
     {
-        Report(span, $"Cannot cast {expression?.Type ?? typeof(void)} to {key.Type} for variable {key.Name}.");
+        Report(span, $"Cannot cast {expression?.Type ?? typeof(void)} to {key.Type} for variable {key.Name}.", MessageType.Warning);
     }
 }

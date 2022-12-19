@@ -44,7 +44,6 @@ public static class MessageTypeHelper
             {messageType.GetPrefix()}
             {message.Message}
             {message.Span}
-
             """;
     }
 }

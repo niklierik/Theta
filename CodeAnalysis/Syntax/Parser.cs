@@ -150,7 +150,7 @@ internal sealed class Parser
     {
         var literalToken = MatchToken(type);
 
-        return new LiteralExpressionSyntax()
+        return new LiteralExpressionSyntax(literalToken.Span)
         {
             Value = literalToken.Value,
         };
@@ -164,7 +164,7 @@ internal sealed class Parser
     private ExpressionSyntax ParseNull()
     {
         NextToken();
-        return new LiteralExpressionSyntax { Value = null };
+        return new LiteralExpressionSyntax(Current.Span) { Value = null };
     }
 
     private ExpressionSyntax ParseNamedExpression()
@@ -177,7 +177,7 @@ internal sealed class Parser
     {
         var value = Current.Type == SyntaxType.TrueKeyword;
         NextToken();
-        return new LiteralExpressionSyntax
+        return new LiteralExpressionSyntax(Current.Span)
         {
             Value = value
         };
