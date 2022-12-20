@@ -7,7 +7,7 @@ using Theta.CodeAnalysis.Text;
 
 public sealed class SyntaxTree
 {
-    public SyntaxNode Root { get; }
+    public CompilationUnitSyntax Root { get; }
 
     public SyntaxToken? EOF { get; init; } = null;
 
@@ -29,7 +29,7 @@ public sealed class SyntaxTree
         var parser = new Parser(text);
         var root = parser.ParseCompilationUnit();
         Src = text;
-        Root = root.Root;
+        Root = root;
         EOF = root.EOF;
     }
 

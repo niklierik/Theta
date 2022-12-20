@@ -10,12 +10,44 @@ namespace Theta.CodeAnalysis.Binding;
 
 public sealed class Binder
 {
-    public Binder(Dictionary<VariableSymbol, object?> vars)
+
+    public Binder(BoundScope? parent)
     {
-        Vars = vars;
+        Scope = new BoundScope(parent);
     }
 
-    public Dictionary<VariableSymbol, object?> Vars { get; }
+    public static BoundGlobalScope BindGlobalScope(BoundGlobalScope? prev, CompilationUnitSyntax compilation)
+    {
+        var parent = CreateParentScopes(prev);
+        var binder = new Binder(parent);
+        var expr = binder.BindExpression(compilation.Root);
+        var variables = binder.Scope.GetVariables();
+        return new BoundGlobalScope(prev, variables, expr);
+    }
+
+    private static BoundScope? CreateParentScopes(BoundGlobalScope? prev)
+    {
+        var stack = new Stack<BoundGlobalScope>();
+        while (prev is not null)
+        {
+            stack.Push(prev);
+            prev = prev.Prev;
+        }
+        BoundScope? current = null;
+        while (stack.Count > 0)
+        {
+            var global = stack.Pop();
+            var scope = new BoundScope(current);
+            foreach (var var in global.DeclaredVars)
+            {
+                scope.TryDeclare(var);
+            }
+            current = scope;
+        }
+        return current;
+    }
+
+    public BoundScope Scope { get; private set; }
 
     public BoundExpression? BindExpression(ExpressionSyntax? syntax)
     {
@@ -99,13 +131,12 @@ public sealed class Binder
     private BoundExpression? BindNamedExpression(NamedExpressionSyntax namedExpression)
     {
         var name = namedExpression.IdentifierToken.Text;
-        var variable = Vars.FirstOrDefault(v => v.Key.Name == name);
-        if (variable.Key is null)
+        if (!Scope.TryLookup(name, out var variable) || variable is null)
         {
             Diagnostics.ReportUndefinedName(name, namedExpression.Span);
             return new BoundLiteralExpression(null, namedExpression.Span);
         }
-        return new BoundVariableExpression(variable.Key, namedExpression.Span);
+        return new BoundVariableExpression(variable, namedExpression.Span);
     }
 
     private BoundExpression? BindAssignmentExpression(AssignmentExpressionSyntax assignmentExpression)
@@ -113,13 +144,14 @@ public sealed class Binder
         var name = assignmentExpression.Identifier.Text;
 
         var expression = BindExpression(assignmentExpression.Expression);
-        var variable = Vars.FirstOrDefault(v => v.Key.Name == name);
-        if (variable.Key is not null && !variable.Key.Type.IsAssignableFrom(expression?.Type ?? typeof(void)))
+        var variable = new VariableSymbol(name, expression?.Type ?? typeof(void));
+
+        if (!Scope.TryDeclare(variable))
         {
-            Diagnostics.ReportInvalidCast(variable.Key, expression, assignmentExpression.Span);
+            Diagnostics.ReportVarAlreadyDeclared(name, assignmentExpression.Span);
             return new BoundLiteralExpression(null, assignmentExpression.Span);
         }
-        return new BoundAssignmentExpression(name, expression, assignmentExpression.Span);
+        return new BoundAssignmentExpression(variable, expression, assignmentExpression.Span);
     }
 
 }

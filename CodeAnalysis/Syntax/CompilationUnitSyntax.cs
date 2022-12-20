@@ -5,15 +5,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using Theta.CodeAnalysis.Binding;
 
 public sealed class CompilationUnitSyntax : SyntaxNode
 {
+
+
     public CompilationUnitSyntax(ExpressionSyntax expression, SyntaxToken eof)
     {
         Root = expression;
         EOF = eof;
     }
+
+
 
     public override SyntaxType Type => SyntaxType.CompilationUnitNode;
 

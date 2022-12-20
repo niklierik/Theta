@@ -6,9 +6,9 @@ namespace Theta.CodeAnalysis.Binding;
 
 public sealed class BoundAssignmentExpression : BoundExpression
 {
-    public BoundAssignmentExpression(string name, BoundExpression? expression, TextSpan span)
+    public BoundAssignmentExpression(VariableSymbol var, BoundExpression? expression, TextSpan span)
     {
-        Name = name;
+        Var = var;
         Expression = expression;
         Span = span;
     }
@@ -17,7 +17,7 @@ public sealed class BoundAssignmentExpression : BoundExpression
 
     public override BoundNodeType NodeType => BoundNodeType.AssignmentExpression;
 
-    public string Name { get; }
+    public VariableSymbol Var { get; }
     public BoundExpression? Expression { get; }
 
     public override TextSpan Span { get; }
@@ -25,7 +25,7 @@ public sealed class BoundAssignmentExpression : BoundExpression
     public override object? Evaluate(Evaluator eval)
     {
         var value = eval.EvaluateExpression(Expression);
-        eval.Vars[new VariableSymbol(Name, Type)] = value;
+        eval.Vars[Var] = value;
         return value;
     }
 }
