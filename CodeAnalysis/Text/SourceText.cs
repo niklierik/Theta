@@ -20,27 +20,7 @@ public sealed class SourceText
 
     public int GetLineIndex(int position)
     {
-        var lower = 0;
-        var upper = Lines.Count - 1;
-        while (lower <= upper)
-        {
-            var index = lower + (upper - lower) / 2;
-            var start = Lines[index].Start;
-            var span = Lines[index].SpanIncludingLineBreak;
-            if (span.In(position))
-            {
-                return index;
-            }
-            if (position < start)
-            {
-                upper = lower - 1;
-            }
-            else
-            {
-                lower = upper + 1;
-            }
-        }
-        return -1;
+        return Lines.FindIndex(line => line.SpanIncludingLineBreak.In(position));
     }
 
     public char this[int index]
@@ -57,6 +37,8 @@ public sealed class SourceText
 
     public int Length => _text.Length;
     public int Count => _text.Length;
+
+    public bool IsEmpty => string.IsNullOrWhiteSpace(_text);
 
     public string Substring(int start, int length)
     {
@@ -125,6 +107,24 @@ public sealed class SourceText
     {
         return _text.ToLower();
     }
+
+    public static SourceText FromConsole(bool multiline = true)
+    {
+        Console.ResetColor();
+        if (!multiline)
+        {
+            return SourceText.From(Console.ReadLine() ?? "");
+        }
+        string input = "";
+        string? line;
+        while (!string.IsNullOrWhiteSpace(line = Console.ReadLine()))
+        {
+            input += line + Environment.NewLine;
+            " | ".Log(ConsoleColor.DarkGray, false);
+            Console.ResetColor();
+        }
+        return SourceText.From(input);
+    }
 }
 
 public sealed class TextLine
@@ -133,7 +133,6 @@ public sealed class TextLine
     public int Start { get; }
     public int Length { get; }
     public int LengthIncludingLineBreak { get; }
-
     public TextSpan Span => new(Start, Length);
     public TextSpan SpanIncludingLineBreak => new(Start, LengthIncludingLineBreak);
 

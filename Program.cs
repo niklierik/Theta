@@ -19,16 +19,39 @@ internal static class Program
         Console.InputEncoding = Console.OutputEncoding = Encoding.UTF8;
         CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
         bool printTree = false;
+        bool multiline = false;
+        foreach (var arg in args)
+        {
+            if (arg.ToLower() == "-multiline")
+            {
+                multiline = true;
+            }
+            if (arg.ToLower() == "-printtree")
+            {
+                printTree = true;
+            }
+        }
         var vars = new Dictionary<VariableSymbol, object?>();
         while (true)
         {
             var diagnostics = new DiagnosticBag();
             " > ".Log(ConsoleColor.DarkGray, false);
 
-            var input = SourceText.From(Console.ReadLine() ?? "");
+            var input = SourceText.FromConsole(multiline);
+            if (input.IsEmpty)
+            {
+                continue;
+            }
             if (input.ToLower() == "#exit()")
             {
                 return;
+            }
+            if (input.ToLower() == "#multiline()")
+            {
+                multiline = !multiline;
+                Console.Write("Multiline input: ");
+                multiline.OnOff().Log(multiline.GoodBadColor());
+                continue;
             }
             if (input.ToLower() == "#printtree()")
             {

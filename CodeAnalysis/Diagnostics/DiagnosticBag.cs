@@ -15,6 +15,51 @@ public sealed class DiagnosticBag : IEnumerable<Diagnostic>
         Diagnostics.AddRange(other.Diagnostics);
     }
 
+    public void ForEach(Action<Diagnostic> writeLine)
+    {
+        foreach (var d in this)
+        {
+            writeLine?.Invoke(d);
+        }
+    }
+
+    public void ReportAll(SourceText input)
+    {
+        ReportAll(Console.Write, input);
+    }
+
+    public void ReportAll(Action<string>? write, SourceText input)
+    {
+        if (write is null)
+        {
+            return;
+        }
+        foreach (var d in this)
+        {
+            Console.ForegroundColor = d.MessageType.GetColor();
+            int startLineIndex = input.GetLineIndex(d.Span.Start);
+            int endLineIndex = input.GetLineIndex(d.Span.Start + d.Span.Length);
+            var start = input.Lines[startLineIndex];
+            var end = input.Lines[endLineIndex];
+            write(d.ToString(startLineIndex, endLineIndex, -start.Start));
+            write(Environment.NewLine);
+            WriteWrongLine(write, input, d, d.Span);
+            write(Environment.NewLine);
+            write(Environment.NewLine);
+        }
+        Console.ResetColor();
+    }
+
+    public void WriteWrongLine(Action<string> write, SourceText input, Diagnostic diagnostic, TextSpan span)
+    {
+        for (int i = span.Start; i < span.Start + span.Length; i++)
+        {
+            Console.ForegroundColor = (diagnostic.Span.In(i)) ? diagnostic.MessageType.GetColor() : ConsoleColor.Gray;
+            write(input[i].ToString());
+        }
+        Console.ResetColor();
+    }
+
     public bool HasError => Diagnostics.Where(d => d.MessageType == MessageType.Error).Any();
 
     public IEnumerator<Diagnostic> GetEnumerator() => Diagnostics.GetEnumerator();
@@ -91,48 +136,13 @@ public sealed class DiagnosticBag : IEnumerable<Diagnostic>
         Report(span, ex.ToString(), type);
     }
 
-    public void ForEach(Action<Diagnostic> writeLine)
-    {
-        foreach (var d in this)
-        {
-            writeLine?.Invoke(d);
-        }
-    }
-
-    public void ReportAll(SourceText input)
-    {
-        ReportAll(Console.WriteLine, input);
-    }
-
-    public void ReportAll(Action<string>? write, SourceText input)
-    {
-        if (write is null)
-        {
-            return;
-        }
-        foreach (var d in this)
-        {
-            Console.ForegroundColor = d.MessageType.GetColor();
-            int lineIndex = input.GetLineIndex(d.Span.Start);
-            write(d.ToString(lineIndex));
-            WriteWrongLine(input, d);
-            write(Environment.NewLine);
-        }
-        Console.ResetColor();
-    }
-
-    public void WriteWrongLine(SourceText input, Diagnostic diagnostic)
-    {
-        for (int i = 0; i < input.Length; i++)
-        {
-            Console.ForegroundColor = (diagnostic.Span.In(i)) ? diagnostic.MessageType.GetColor() : ConsoleColor.Gray;
-            Console.Write(input[i]);
-        }
-        Console.ResetColor();
-    }
-
     public void ReportUndefinedName(string name, TextSpan span)
     {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            Report(span, $"Variable name expected.", MessageType.Error);
+            return;
+        }
         Report(span, $"Undefined object with name '{name}'.", MessageType.Warning);
     }
 

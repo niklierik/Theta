@@ -18,8 +18,12 @@ public sealed class Diagnostic
 
     public string Input { get; set; } = string.Empty; 
 
-    public string ToString(int line)
+    public string ToString(int start, int end, int offset)
     {
-        return MessageType.Message(this, line);
+        return $"""
+            {MessageType.GetPrefix()}
+            {Message}
+            {Span.ToString(start, end, offset)}
+            """;
     }
 }
