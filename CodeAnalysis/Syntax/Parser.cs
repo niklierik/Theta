@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Theta.CodeAnalysis.Diagnostics;
 using Theta.CodeAnalysis;
+using Theta.CodeAnalysis.Text;
 
 internal sealed class Parser
 {
@@ -18,19 +19,20 @@ internal sealed class Parser
 
     public DiagnosticBag Diagnostics { get; private set; } = new();
 
-    public Parser(string text)
+    public Parser(SourceText text)
     {
         var lexer = new Lexer(text);
         _tokens = lexer.Where(x => x.Type != SyntaxType.Whitespace && x.Type != SyntaxType.InvalidToken).ToList();
         _position = 0;
         Diagnostics.InsertAll(lexer.Diagnostics);
+        Text = text;
     }
 
     public SyntaxTree Parse()
     {
         var expression = ParseExpression();
         var eof = MatchToken(SyntaxType.EndOfFile);
-        return new(Diagnostics)
+        return new(Diagnostics, Text)
         {
             Root = expression,
             EOF = eof
@@ -56,6 +58,7 @@ internal sealed class Parser
 
     private SyntaxToken Current => Peek();
 
+    public SourceText Text { get; }
 
     private SyntaxToken MatchToken(SyntaxType type)
     {

@@ -1,8 +1,8 @@
 ﻿namespace Theta.CodeAnalysis.Binding;
 
 using System;
-using Theta.CodeAnalysis.Diagnostics;
 using Theta.CodeAnalysis.Evaluation;
+using Theta.CodeAnalysis.Text;
 
 public abstract class BoundExpression : BoundNode
 {

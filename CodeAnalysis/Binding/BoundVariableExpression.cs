@@ -1,6 +1,6 @@
 ﻿using Theta.CodeAnalysis;
-using Theta.CodeAnalysis.Diagnostics;
 using Theta.CodeAnalysis.Evaluation;
+using Theta.CodeAnalysis.Text;
 
 namespace Theta.CodeAnalysis.Binding;
 

@@ -37,13 +37,4 @@ public static class MessageTypeHelper
         }
         return "";
     }
-
-    public static string Message(this MessageType messageType, Diagnostic message)
-    {
-        return $"""
-            {messageType.GetPrefix()}
-            {message.Message}
-            {message.Span}
-            """;
-    }
 }

@@ -1,4 +1,6 @@
-﻿namespace Theta.CodeAnalysis.Diagnostics;
+﻿using Theta.CodeAnalysis.Text;
+
+namespace Theta.CodeAnalysis.Diagnostics;
 
 public sealed class Diagnostic
 {
@@ -16,8 +18,12 @@ public sealed class Diagnostic
 
     public string Input { get; set; } = string.Empty; 
 
-    public override string ToString()
+    public string ToString(int start, int end, int offset)
     {
-        return MessageType.Message(this);
+        return $"""
+            {MessageType.GetPrefix()}
+            {Message}
+            {Span.ToString(start, end, offset)}
+            """;
     }
 }

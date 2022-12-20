@@ -4,6 +4,7 @@ using Theta.CodeAnalysis.Binding;
 using Theta.CodeAnalysis.Diagnostics;
 using Theta.CodeAnalysis.Syntax;
 using Theta.CodeAnalysis;
+using Theta.CodeAnalysis.Text;
 
 public sealed class Compilation
 {
@@ -36,6 +37,11 @@ public sealed class Compilation
     }
 
     public static EvaluationResult EvalLine(string line, Dictionary<VariableSymbol, object?> vars, bool printTree = false)
+    {
+        return EvalLine(SourceText.From(line), vars, printTree);
+    }
+
+    public static EvaluationResult EvalLine(SourceText line, Dictionary<VariableSymbol, object?> vars, bool printTree = false)
     {
         var expression = SyntaxTree.Parse(line);
         var compilation = new Compilation(expression);
