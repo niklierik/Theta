@@ -1,4 +1,4 @@
-﻿using Theta.CodeAnalysis.Diagnostics;
+﻿using Theta.CodeAnalysis.Text;
 
 namespace Theta.CodeAnalysis.Syntax;
 

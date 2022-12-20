@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using Theta.CodeAnalysis.Binding;
 using Theta.CodeAnalysis.Syntax;
+using Theta.CodeAnalysis.Text;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace Theta.CodeAnalysis.Diagnostics;
@@ -98,12 +99,12 @@ public sealed class DiagnosticBag : IEnumerable<Diagnostic>
         }
     }
 
-    public void ReportAll(string input)
+    public void ReportAll(SourceText input)
     {
         ReportAll(Console.WriteLine, input);
     }
 
-    public void ReportAll(Action<string>? write, string input)
+    public void ReportAll(Action<string>? write, SourceText input)
     {
         if (write is null)
         {
@@ -112,14 +113,15 @@ public sealed class DiagnosticBag : IEnumerable<Diagnostic>
         foreach (var d in this)
         {
             Console.ForegroundColor = d.MessageType.GetColor();
-            write(d.ToString());
+            int lineIndex = input.GetLineIndex(d.Span.Start);
+            write(d.ToString(lineIndex));
             WriteWrongLine(input, d);
             write(Environment.NewLine);
         }
         Console.ResetColor();
     }
 
-    public void WriteWrongLine(string input, Diagnostic diagnostic)
+    public void WriteWrongLine(SourceText input, Diagnostic diagnostic)
     {
         for (int i = 0; i < input.Length; i++)
         {

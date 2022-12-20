@@ -8,6 +8,7 @@ using Theta.CodeAnalysis.Diagnostics;
 using Theta.CodeAnalysis.Evaluation;
 using Theta.CodeAnalysis.Syntax;
 using Theta.CodeAnalysis;
+using Theta.CodeAnalysis.Text;
 
 internal static class Program
 {
@@ -24,7 +25,7 @@ internal static class Program
             var diagnostics = new DiagnosticBag();
             " > ".Log(ConsoleColor.DarkGray, false);
 
-            var input = Console.ReadLine() ?? "";
+            var input = SourceText.From(Console.ReadLine() ?? "");
             if (input.ToLower() == "#exit()")
             {
                 return;
@@ -55,7 +56,7 @@ internal static class Program
         }
     }
 
-    private static void ShowErrors(DiagnosticBag diagnostics, string input)
+    private static void ShowErrors(DiagnosticBag diagnostics, SourceText input)
     {
         diagnostics.ReportAll(input);
     }

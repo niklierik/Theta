@@ -8,10 +8,11 @@ using System.Threading.Tasks;
 using Theta.CodeAnalysis.Diagnostics;
 using Theta.CodeAnalysis;
 using System.Globalization;
+using Theta.CodeAnalysis.Text;
 
 public sealed class Lexer : IEnumerable<SyntaxToken>
 {
-    private readonly string _input;
+    private readonly SourceText _input;
     private int _pos;
 
 
@@ -59,8 +60,13 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
         return substr == text;
     }
 
+    public Lexer(string text) : this(SourceText.From(text))
+    {
 
-    public Lexer(string text)
+    }
+
+
+    public Lexer(SourceText text)
     {
         _input = text;
         _pos = 0;
