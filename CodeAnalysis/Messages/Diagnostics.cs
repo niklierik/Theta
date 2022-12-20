@@ -9,7 +9,7 @@ public sealed class Diagnostics : IEnumerable<Diagnostic>
 {
 
     private static volatile Diagnostics? _instance = null;
-    private static object syncRoot = new object();
+    private static readonly object syncRoot = new();
 
     private Diagnostics() { }
 
@@ -193,5 +193,10 @@ public sealed class Diagnostics : IEnumerable<Diagnostic>
     public static void ReportInvalidCast(CodeAnalysis.VariableSymbol key, BoundExpression? expression, TextSpan span)
     {
         Report(span, $"Cannot cast {expression?.Type ?? typeof(void)} to {key.Type} for variable {key.Name}.", MessageType.Warning);
+    }
+
+    public static void ReportVarAlreadyDeclared(string var, TextSpan span)
+    {
+        Report(span, $"Variable '{var} is already declared.'");
     }
 }

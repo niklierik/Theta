@@ -62,7 +62,7 @@ public sealed class SourceText
             lineStart = position;
 
         }
-        if (position > lineStart)
+        if (position >= lineStart)
         {
             ParseLine(position, lineStart, 0);
         }

@@ -21,7 +21,7 @@ internal sealed class Parser
     {
         var lexer = new Lexer(text);
         _tokens = lexer.ToList();
-        _tokens = _tokens.Where(x => x.Type is not SyntaxType.Whitespace ).ToList();
+        _tokens = _tokens.Where(x => x.Type is not SyntaxType.Whitespace).ToList();
         if (Diagnostics.HasError || _tokens.Any(x => x.Type == SyntaxType.InvalidToken))
         {
             throw new HasErrorException();
@@ -29,6 +29,16 @@ internal sealed class Parser
         _position = 0;
         Text = text;
     }
+
+
+    public CompilationUnitSyntax ParseCompilationUnit()
+    {
+        var expression = ParseExpression();
+        var eof = MatchToken(SyntaxType.EndOfFile);
+        return new CompilationUnitSyntax(expression, eof);
+    }
+
+    /*
 
     public SyntaxTree Parse()
     {
@@ -41,6 +51,7 @@ internal sealed class Parser
             Src = Text
         };
     }
+    */
 
     private SyntaxToken NextToken()
     {
@@ -190,4 +201,5 @@ internal sealed class Parser
             Expression = expression
         };
     }
+
 }
