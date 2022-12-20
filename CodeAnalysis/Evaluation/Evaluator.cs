@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Theta.CodeAnalysis.Binding;
-using Theta.CodeAnalysis.Diagnostics;
+using Theta.CodeAnalysis.Messages;
 using Theta.CodeAnalysis;
 using static Theta.CodeAnalysis.Syntax.Parser;
 
@@ -15,7 +15,6 @@ public sealed class Evaluator
 
     private readonly BoundExpression _tree;
 
-    public DiagnosticBag Diagnostics { get; } = new();
     public Dictionary<VariableSymbol, object?> Vars { get; }
 
     public Evaluator(BoundExpression tree, Dictionary<VariableSymbol, object?> vars)

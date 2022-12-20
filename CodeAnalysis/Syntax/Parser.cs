@@ -6,25 +6,27 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
-using Theta.CodeAnalysis.Diagnostics;
+using Theta.CodeAnalysis.Messages;
 using Theta.CodeAnalysis;
 using Theta.CodeAnalysis.Text;
 
 internal sealed class Parser
 {
-    private List<SyntaxToken> _tokens;
+    private readonly List<SyntaxToken> _tokens;
 
     private int _position;
 
 
-    public DiagnosticBag Diagnostics { get; private set; } = new();
-
     public Parser(SourceText text)
     {
         var lexer = new Lexer(text);
-        _tokens = lexer.Where(x => x.Type != SyntaxType.Whitespace && x.Type != SyntaxType.InvalidToken).ToList();
+        _tokens = lexer.ToList();
+        _tokens = _tokens.Where(x => x.Type is not SyntaxType.Whitespace ).ToList();
+        if (Diagnostics.HasError || _tokens.Any(x => x.Type == SyntaxType.InvalidToken))
+        {
+            throw new HasErrorException();
+        }
         _position = 0;
-        Diagnostics.InsertAll(lexer.Diagnostics);
         Text = text;
     }
 
@@ -32,10 +34,11 @@ internal sealed class Parser
     {
         var expression = ParseExpression();
         var eof = MatchToken(SyntaxType.EndOfFile);
-        return new(Diagnostics, Text)
+        return new SyntaxTree
         {
             Root = expression,
-            EOF = eof
+            EOF = eof,
+            Src = Text
         };
     }
 
@@ -128,25 +131,14 @@ internal sealed class Parser
 
     public ExpressionSyntax ParsePrimaryExpression()
     {
-        switch (Current.Type)
+        return Current.Type switch
         {
-            case SyntaxType.OpenGroup:
-                return ParseGroupExpression();
-
-            case SyntaxType.TrueKeyword:
-            case SyntaxType.FalseKeyword:
-                return ParseBooleanExpression();
-
-            case SyntaxType.NullKeyword:
-                return ParseNull();
-
-            case SyntaxType.NumberToken:
-                return ParseNumberLiteral();
-            
-            case SyntaxType.IdentifierToken:
-            default:
-                return ParseNamedExpression();
-        }
+            SyntaxType.OpenGroup => ParseGroupExpression(),
+            SyntaxType.TrueKeyword or SyntaxType.FalseKeyword => ParseBooleanExpression(),
+            SyntaxType.NullKeyword => ParseNull(),
+            SyntaxType.NumberToken => ParseNumberLiteral(),
+            _ => ParseNamedExpression(),
+        };
     }
 
     private ExpressionSyntax ParseLiteral(SyntaxType type)

@@ -2,7 +2,7 @@
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.RegularExpressions;
-using Theta.CodeAnalysis.Diagnostics;
+using Theta.CodeAnalysis.Messages;
 using Theta.CodeAnalysis.Syntax;
 using Theta.CodeAnalysis;
 
@@ -15,7 +15,6 @@ public sealed class Binder
         Vars = vars;
     }
 
-    public DiagnosticBag Diagnostics { get; private set; } = new();
     public Dictionary<VariableSymbol, object?> Vars { get; }
 
     public BoundExpression? BindExpression(ExpressionSyntax? syntax)

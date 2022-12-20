@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="CodeAnalysis\Diagnostics\TextSpan.cs~RF12201832.TMP" />
+    <None Remove="CodeAnalysis\Messages\TextSpan.cs~RF12201832.TMP" />
   </ItemGroup>
 
 </Project>

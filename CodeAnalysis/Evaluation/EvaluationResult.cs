@@ -1,18 +1,15 @@
-﻿using Theta.CodeAnalysis.Diagnostics;
+﻿using Theta.CodeAnalysis.Messages;
 
 namespace Theta.CodeAnalysis.Evaluation;
 
 public sealed class EvaluationResult
 {
 
-    public EvaluationResult(DiagnosticBag diagnostics, object? value)
+    public EvaluationResult()
     {
-        Diagnostics = diagnostics;
-        Value = value;
     }
 
     public bool HasResult => Value is not null;
 
-    public DiagnosticBag Diagnostics { get; }
-    public object? Value { get; }
+    public required object? Value { get; init; }
 }

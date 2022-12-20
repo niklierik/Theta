@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using Theta.CodeAnalysis;
+using Theta.CodeAnalysis.Messages;
 using Theta.CodeAnalysis.Syntax;
 
 namespace Theta.Tests.CodeAnalysis;
@@ -21,6 +22,7 @@ public class SyntaxUtilsTest
         Assert.NotNull(token);
         Assert.Equal(type, token.Type);
         Assert.Equal(text, token.Text);
+        Diagnostics.Clear();
     }
 
     [Theory]

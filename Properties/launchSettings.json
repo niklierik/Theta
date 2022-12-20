@@ -1,8 +1,7 @@
 {
   "profiles": {
     "Theta": {
-      "commandName": "Project",
-      "commandLineArgs": "-multiline"
+      "commandName": "Project"
     }
   }
 }
