@@ -226,7 +226,8 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
         token ??= ReadConcreteTokens();
         if (token is null)
         {
-            Diagnostics.ReportInvalidCharacter(Current, _pos);
+            Diagnostics.ReportInvalidCharacter(Current, _start);
+            _pos++;
             token = new SyntaxToken(SyntaxType.InvalidToken) { Position = _start, Text = Current.ToString() };
         }
         return token;

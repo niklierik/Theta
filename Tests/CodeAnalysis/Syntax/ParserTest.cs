@@ -2,6 +2,7 @@
 
 using System.Globalization;
 using Theta.CodeAnalysis;
+using Theta.CodeAnalysis.Messages;
 using Theta.CodeAnalysis.Syntax;
 
 public class ParserTest
@@ -48,6 +49,7 @@ public class ParserTest
             e.AssertNode(SyntaxType.NameExpression);
             e.AssertToken(SyntaxType.IdentifierToken, "c");
         }
+        Diagnostics.Clear();
     }
 
 
@@ -87,6 +89,7 @@ public class ParserTest
             e.AssertNode(SyntaxType.NameExpression);
             e.AssertToken(SyntaxType.IdentifierToken, "b");
         }
+        Diagnostics.Clear();
     }
 
     public static IEnumerable<object[]> GetBinaryOperatorPairsData()

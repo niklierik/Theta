@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using Theta.CodeAnalysis;
 using Theta.CodeAnalysis.Evaluation;
+using Theta.CodeAnalysis.Messages;
 using Theta.CodeAnalysis.Syntax;
 
 public class EvaluatorTest
@@ -54,6 +55,7 @@ public class EvaluatorTest
         CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
         var result = Compilation.EvalLine(expression, Vars);
         Assert.Equal(value, result.Value);
+        Diagnostics.Clear();
     }
 
     [Fact]
@@ -64,6 +66,7 @@ public class EvaluatorTest
         _ = Compilation.EvalLine("a = 2", Vars);
         var result = Compilation.EvalLine("a + 2", Vars);
         Assert.Equal((long)4, result.Value);
+        Diagnostics.Clear();
     }
 
     private static IEnumerable<(SyntaxType syntax, Func<bool, bool, bool> func)> BooleanOperators

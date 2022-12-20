@@ -20,11 +20,12 @@ internal sealed class Parser
     public Parser(SourceText text)
     {
         var lexer = new Lexer(text);
-        if (Diagnostics.HasError || lexer.Any(x => x.Type == SyntaxType.InvalidToken))
+        _tokens = lexer.ToList();
+        _tokens = _tokens.Where(x => x.Type is not SyntaxType.Whitespace ).ToList();
+        if (Diagnostics.HasError || _tokens.Any(x => x.Type == SyntaxType.InvalidToken))
         {
             throw new HasErrorException();
         }
-        _tokens = lexer.Where(x => x.Type != SyntaxType.Whitespace).ToList();
         _position = 0;
         Text = text;
     }

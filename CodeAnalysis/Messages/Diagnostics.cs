@@ -2,7 +2,6 @@
 using Theta.CodeAnalysis.Binding;
 using Theta.CodeAnalysis.Syntax;
 using Theta.CodeAnalysis.Text;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Theta.CodeAnalysis.Messages;
 
@@ -105,7 +104,7 @@ public sealed class Diagnostics : IEnumerable<Diagnostic>
         Console.ResetColor();
     }
 
-    public static bool HasError => Instance.Messages.Where(d => d.MessageType == MessageType.Error).Any();
+    public static bool HasError => Instance.Messages.Any(d => d.MessageType == MessageType.Error);
 
     public IEnumerator<Diagnostic> GetEnumerator() => Messages.GetEnumerator();
 

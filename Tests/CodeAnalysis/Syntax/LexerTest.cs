@@ -2,6 +2,7 @@ using System.Globalization;
 using Theta.CodeAnalysis;
 using Theta.CodeAnalysis.Syntax;
 using System.Linq;
+using Theta.CodeAnalysis.Messages;
 
 namespace Theta.Tests.CodeAnalysis.Syntax;
 
@@ -19,6 +20,7 @@ public class LexerTest
         var token = Assert.Single(tokens);
         Assert.Equal(type, token.Type);
         Assert.Equal(text, (token as SyntaxToken)?.Text ?? null);
+        Diagnostics.Clear();
     }
 
 
@@ -34,6 +36,7 @@ public class LexerTest
         Assert.Equal(SyntaxType.Whitespace, tokens[1].Type);
         Assert.Equal(tokens[2].Type, t2Type);
         Assert.Equal(tokens[2].Text, t2Text);
+        Diagnostics.Clear();
     }
 
     [Fact]
