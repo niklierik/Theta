@@ -7,11 +7,11 @@ using Theta.CodeAnalysis.Text;
 
 public sealed class SyntaxTree
 {
-    public required SyntaxNode Root { get; init; }
+    public SyntaxNode Root { get; }
 
     public SyntaxToken? EOF { get; init; } = null;
 
-    public required SourceText Src { get; init; }
+    public SourceText Src { get; }
 
 
     public static SyntaxTree Parse(string text)
@@ -21,12 +21,16 @@ public sealed class SyntaxTree
 
     public static SyntaxTree Parse(SourceText text)
     {
-        var parser = new Parser(text);
-        return parser.Parse();
+        return new(text);
     }
 
-    public SyntaxTree()
+    private SyntaxTree(SourceText text)
     {
+        var parser = new Parser(text);
+        var root = parser.ParseCompilationUnit();
+        Src = text;
+        Root = root.Root;
+        EOF = root.EOF;
     }
 
 

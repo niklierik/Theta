@@ -143,4 +143,5 @@ public enum SyntaxType
     /// null
     /// </summary>
     NullKeyword,
+    CompilationUnitNode,
 }
