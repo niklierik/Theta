@@ -1,6 +1,6 @@
 ﻿using Theta.CodeAnalysis.Text;
 
-namespace Theta.CodeAnalysis.Diagnostics;
+namespace Theta.CodeAnalysis.Messages;
 
 public sealed class Diagnostic
 {

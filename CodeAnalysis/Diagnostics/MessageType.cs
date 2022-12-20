@@ -1,4 +1,4 @@
-﻿namespace Theta.CodeAnalysis.Diagnostics;
+﻿namespace Theta.CodeAnalysis.Messages;
 
 public enum MessageType
 {

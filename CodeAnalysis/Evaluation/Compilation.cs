@@ -1,7 +1,7 @@
 ﻿namespace Theta.CodeAnalysis.Evaluation;
 
 using Theta.CodeAnalysis.Binding;
-using Theta.CodeAnalysis.Diagnostics;
+using Theta.CodeAnalysis.Messages;
 using Theta.CodeAnalysis.Syntax;
 using Theta.CodeAnalysis;
 using Theta.CodeAnalysis.Text;
@@ -15,25 +15,21 @@ public sealed class Compilation
 
     public SyntaxTree Syntax { get; }
 
-    public DiagnosticBag Diagnostics { get; } = new();
-
     public EvaluationResult Evaluate(Dictionary<VariableSymbol, object?> vars)
     {
         var binder = new Binder(vars);
         var boundExpression = binder.BindExpression(Syntax.Root as ExpressionSyntax);
-        Diagnostics.InsertAll(binder.Diagnostics);
         if (boundExpression is null || Diagnostics.HasError)
         {
-            return new EvaluationResult(Diagnostics, null);
+            return new EvaluationResult { Value = null };
         }
         var eval = new Evaluator(boundExpression, vars);
         var res = eval.Evaluate();
-        Diagnostics.InsertAll(eval.Diagnostics);
         if (Diagnostics.HasError)
         {
-            return new EvaluationResult(Diagnostics, null);
+            return new EvaluationResult {Value = null };
         }
-        return new EvaluationResult(Diagnostics, res);
+        return new EvaluationResult { Value = res };
     }
 
     public static EvaluationResult EvalLine(string line, Dictionary<VariableSymbol, object?> vars, bool printTree = false)
@@ -41,12 +37,11 @@ public sealed class Compilation
         return EvalLine(SourceText.From(line), vars, printTree);
     }
 
-    public static EvaluationResult EvalLine(SourceText line, Dictionary<VariableSymbol, object?> vars, bool printTree = false)
+    public static EvaluationResult EvalLine(SourceText line, Dictionary<VariableSymbol, object?> vars,  bool printTree = false)
     {
         var expression = SyntaxTree.Parse(line);
         var compilation = new Compilation(expression);
         var result = compilation.Evaluate(vars);
-        result.Diagnostics.InsertAll(expression.Diagnostics);
         if (printTree)
         {
             Console.ForegroundColor = ConsoleColor.DarkGray;

@@ -2,6 +2,7 @@
 
 using System;
 using Theta.CodeAnalysis.Evaluation;
+using Theta.CodeAnalysis.Messages;
 using Theta.CodeAnalysis.Syntax;
 using Theta.CodeAnalysis.Text;
 
@@ -27,7 +28,7 @@ public sealed class BoundUnaryExpression : BoundExpression
         var operand = eval.EvaluateExpression(Operand);
         if (operand is null)
         {
-            eval.Diagnostics.ReportUnexpectedNull(Span);
+            Diagnostics.ReportUnexpectedNull(Span);
             return null;
         }
         switch (Operator.Type)
@@ -39,7 +40,7 @@ public sealed class BoundUnaryExpression : BoundExpression
             case BoundUnaryOperatorType.Minus:
                 return -(dynamic) operand;
             default:
-                eval.Diagnostics.ReportUndefinedUnaryBehaviour(this, Span);
+                Diagnostics.ReportUndefinedUnaryBehaviour(this, Span);
                 return null;
         }
     }

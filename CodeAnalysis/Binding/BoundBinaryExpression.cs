@@ -1,4 +1,5 @@
 ﻿using Theta.CodeAnalysis.Evaluation;
+using Theta.CodeAnalysis.Messages;
 using Theta.CodeAnalysis.Syntax;
 using Theta.CodeAnalysis.Text;
 
@@ -98,7 +99,7 @@ public sealed class BoundBinaryExpression : BoundExpression
                 }
         }
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
-        eval.Diagnostics.ReportUndefinedBinaryBehaviour(this, Span);
+        Diagnostics.ReportUndefinedBinaryBehaviour(this, Span);
         return null;
     }
 

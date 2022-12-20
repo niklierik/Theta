@@ -4,7 +4,7 @@ using System;
 using System.Globalization;
 using System.Text;
 using Theta.CodeAnalysis.Binding;
-using Theta.CodeAnalysis.Diagnostics;
+using Theta.CodeAnalysis.Messages;
 using Theta.CodeAnalysis.Evaluation;
 using Theta.CodeAnalysis.Syntax;
 using Theta.CodeAnalysis;
@@ -14,12 +14,20 @@ internal static class Program
 {
 
 
-    public static void Main(string[] args)
+    private static bool printTree = false;
+    private static bool multiline = false;
+    private static Dictionary<VariableSymbol, object?> vars = new();
+
+    private static void ConsoleSetup()
     {
         Console.InputEncoding = Console.OutputEncoding = Encoding.UTF8;
         CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
-        bool printTree = false;
-        bool multiline = false;
+    }
+
+    
+
+    private static void ConsumeArgs(string[] args)
+    {
         foreach (var arg in args)
         {
             if (arg.ToLower() == "-multiline")
@@ -31,56 +39,78 @@ internal static class Program
                 printTree = true;
             }
         }
-        var vars = new Dictionary<VariableSymbol, object?>();
+    }
+
+    public static void Main(string[] args)
+    {
+        ConsoleSetup();
+        ConsumeArgs(args);
         while (true)
         {
-            var diagnostics = new DiagnosticBag();
+
             " > ".Log(ConsoleColor.DarkGray, false);
 
             var input = SourceText.FromConsole(multiline);
-            if (input.IsEmpty)
+            try
             {
-                continue;
-            }
-            if (input.ToLower() == "#exit()")
-            {
-                return;
-            }
-            if (input.ToLower() == "#multiline()")
-            {
-                multiline = !multiline;
-                Console.Write("Multiline input: ");
-                multiline.OnOff().Log(multiline.GoodBadColor());
-                continue;
-            }
-            if (input.ToLower() == "#printtree()")
-            {
-                printTree = !printTree;
-                Console.Write("Printing tree: ");
-                printTree.OnOff().Log(printTree.GoodBadColor());
-                continue;
-            }
-            if (input.ToLower() == "#clear()")
-            {
-                Console.Clear();
-                continue;
-            }
-            var result = Compilation.EvalLine(input, vars, printTree);
-            diagnostics.InsertAll(result.Diagnostics);
-            ShowErrors(diagnostics, input);
-            if (diagnostics.HasError)
-            {
-                continue;
-            }
+                if (input.IsEmpty)
+                {
+                    continue;
+                }
 
-            $"   {result.Value ?? "null"}".Log((result?.Value?.GetType() ?? typeof(void)).GetColor());
+                #region Macros
+                var inputtxt = input.ToLower().Trim();
+                if (inputtxt == "#exit()")
+                {
+                    return;
+                }
+                if (inputtxt == "#multiline()")
+                {
+                    multiline = !multiline;
+                    Console.Write("Multiline input: ");
+                    multiline.OnOff().Log(multiline.GoodBadColor());
+                    continue;
+                }
+                if (inputtxt == "#printtree()")
+                {
+                    printTree = !printTree;
+                    Console.Write("Printing tree: ");
+                    printTree.OnOff().Log(printTree.GoodBadColor());
+                    continue;
+                }
+                if (inputtxt == "#clear()")
+                {
+                    Console.Clear();
+                    continue;
+                }
+                if (inputtxt == "#clearvars()")
+                {
+                    vars.Clear();
+                    continue;
+                }
+                #endregion
 
-            // $"{eval.AsStringVersion()}".Log(ConsoleColor.DarkGray);
+                var result = Compilation.EvalLine(input, vars, printTree);
+                Diagnostics.ShowErrors(input);
+
+                if (Diagnostics.HasError)
+                {
+                    continue;
+                }
+
+                $"   {result.Value ?? "null"}".Log((result?.Value?.GetType() ?? typeof(void)).GetColor());
+
+                // $"{eval.AsStringVersion()}".Log(ConsoleColor.DarkGray);
+            }
+            catch (HasErrorException)
+            {
+                Diagnostics.ShowErrors(input);
+            }
+            Diagnostics.Clear();
         }
     }
 
-    private static void ShowErrors(DiagnosticBag diagnostics, SourceText input)
-    {
-        diagnostics.ReportAll(input);
-    }
+
+
+
 }

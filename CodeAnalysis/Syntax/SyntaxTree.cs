@@ -2,17 +2,16 @@
 
 using System.Collections;
 using System.Collections.Generic;
-using Theta.CodeAnalysis.Diagnostics;
+using Theta.CodeAnalysis.Messages;
 using Theta.CodeAnalysis.Text;
 
-public sealed class SyntaxTree 
+public sealed class SyntaxTree
 {
     public required SyntaxNode Root { get; init; }
 
     public SyntaxToken? EOF { get; init; } = null;
 
-    public DiagnosticBag Diagnostics { get; private set; } = new();
-    public SourceText Src { get; }
+    public required SourceText Src { get; init; }
 
 
     public static SyntaxTree Parse(string text)
@@ -26,10 +25,8 @@ public sealed class SyntaxTree
         return parser.Parse();
     }
 
-    public SyntaxTree(DiagnosticBag diagnostics, SourceText src)
+    public SyntaxTree()
     {
-        Diagnostics.InsertAll(diagnostics);
-        Src = src;
     }
 
 

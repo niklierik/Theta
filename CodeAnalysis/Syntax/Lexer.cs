@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Theta.CodeAnalysis.Diagnostics;
+using Theta.CodeAnalysis.Messages;
 using Theta.CodeAnalysis;
 using System.Globalization;
 using Theta.CodeAnalysis.Text;
@@ -20,9 +20,6 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
     private int _start;
     private object? _value;
     private string _substr;
-
-
-    public DiagnosticBag Diagnostics { get; private set; } = new();
 
     public char CharAt(int pos)
     {
@@ -219,18 +216,30 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
 
     public SyntaxToken Lex()
     {
-        CheckInvariantCulture();
         _start = _pos;
-        var token = ReadNumber();
+        CheckInvariantCulture();
+        SyntaxToken? token = null;
+        token ??= CheckEndOfFile();
+        token ??= ReadNumber();
         token ??= ReadWhitespaces();
         token ??= ReadWord();
         token ??= ReadConcreteTokens();
-        token ??= Current == '\0' ? new SyntaxToken(SyntaxType.EndOfFile) { Position = _start, Text = "" } : null;
         if (token is null)
         {
             Diagnostics.ReportInvalidCharacter(Current, _pos);
+            token = new SyntaxToken(SyntaxType.InvalidToken) { Position = _start, Text = Current.ToString() };
         }
-        return token ?? new SyntaxToken(SyntaxType.InvalidToken) { Position = _start, Text = Current.ToString() };
+        return token;
+    }
+
+    private SyntaxToken? CheckEndOfFile()
+    {
+        if (_pos >= _input.Length)
+        {
+            return new SyntaxToken(SyntaxType.EndOfFile) { Position = _pos, Text = "" };
+
+        }
+        return null;
     }
 
     public IEnumerator<SyntaxToken> GetEnumerator()
