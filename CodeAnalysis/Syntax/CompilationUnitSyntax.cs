@@ -13,7 +13,7 @@ public sealed class CompilationUnitSyntax : SyntaxNode
 
     public CompilationUnitSyntax(ExpressionSyntax expression, SyntaxToken eof)
     {
-        Root = expression;
+        Expression = expression;
         EOF = eof;
     }
 
@@ -25,11 +25,11 @@ public sealed class CompilationUnitSyntax : SyntaxNode
     {
         get
         {
-            yield return Root;
+            yield return Expression;
             yield return EOF;
         }
     }
 
-    public ExpressionSyntax Root { get; }
+    public ExpressionSyntax Expression { get; }
     public SyntaxToken EOF { get; }
 }
