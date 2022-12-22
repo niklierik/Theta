@@ -14,9 +14,10 @@ internal static class Program
 {
 
 
-    private static bool printTree = false;
-    private static bool multiline = false;
-    private static Dictionary<VariableSymbol, object?> vars = new();
+    private static bool _printTree = false;
+    private static bool _multiline = false;
+    private static Dictionary<VariableSymbol, object?> _vars = new();
+    private static Compilation _prev = null;
 
     private static void ConsoleSetup()
     {
@@ -32,11 +33,11 @@ internal static class Program
         {
             if (arg.ToLower() == "-multiline")
             {
-                multiline = true;
+                _multiline = true;
             }
             if (arg.ToLower() == "-printtree")
             {
-                printTree = true;
+                _printTree = true;
             }
         }
     }
@@ -50,7 +51,7 @@ internal static class Program
 
             " > ".Log(ConsoleColor.DarkGray, false);
 
-            var input = SourceText.FromConsole(multiline);
+            var input = SourceText.FromConsole(_multiline);
             try
             {
                 if (input.IsEmpty)
@@ -66,16 +67,16 @@ internal static class Program
                 }
                 if (inputtxt == "#multiline()")
                 {
-                    multiline = !multiline;
+                    _multiline = !_multiline;
                     Console.Write("Multiline input: ");
-                    multiline.OnOff().Log(multiline.GoodBadColor());
+                    _multiline.OnOff().Log(_multiline.GoodBadColor());
                     continue;
                 }
                 if (inputtxt == "#printtree()")
                 {
-                    printTree = !printTree;
+                    _printTree = !_printTree;
                     Console.Write("Printing tree: ");
-                    printTree.OnOff().Log(printTree.GoodBadColor());
+                    _printTree.OnOff().Log(_printTree.GoodBadColor());
                     continue;
                 }
                 if (inputtxt == "#clear()")
@@ -85,18 +86,20 @@ internal static class Program
                 }
                 if (inputtxt == "#clearvars()")
                 {
-                    vars.Clear();
+                    _vars.Clear();
                     continue;
                 }
                 #endregion
 
-                var result = Compilation.EvalLine(input, vars, printTree);
+                var result = Compilation.EvalLine(input, _vars, _printTree, _prev);
                 Diagnostics.ShowErrors(input);
 
                 if (Diagnostics.HasError)
                 {
+                    Diagnostics.Clear();
                     continue;
                 }
+                _prev = result.Compilation;
 
                 $"   {result.Value ?? "null"}".Log((result?.Value?.GetType() ?? typeof(void)).GetColor());
 

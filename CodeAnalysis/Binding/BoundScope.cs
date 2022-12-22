@@ -33,7 +33,7 @@ public sealed class BoundScope
             variable = null;
             return false;
         }
-        return TryLookup(name, out variable);
+        return _parent.TryLookup(name, out variable);
     }
 
     public List<VariableSymbol> GetVariables() => _variables.Values.ToList();

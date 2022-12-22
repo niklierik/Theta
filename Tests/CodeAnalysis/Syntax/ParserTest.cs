@@ -21,8 +21,8 @@ public class ParserTest
         var pr1 = op1.GetBinaryOperatorPrecedence();
         var pr2 = op2.GetBinaryOperatorPrecedence();
         var text = $"a {text1} b {text2} c";
-        var expression = SyntaxTree.Parse(text);
-        using var e = new AssertingEnumerator(expression.Root);
+        var expression = SyntaxTree.Parse(text).Root.Expression;
+        using var e = new AssertingEnumerator(expression);
         if (pr1 >= pr2)
         {
             e.AssertNode(SyntaxType.BinaryExpression);
@@ -65,8 +65,8 @@ public class ParserTest
         var uPr = unary.GetUnaryOperatorPrecedence();
         var bPr = binary.GetBinaryOperatorPrecedence();
         var text = $"{uText} a {bText} b";
-        var expression = SyntaxTree.Parse(text);
-        using var e = new AssertingEnumerator(expression.Root);
+        var expression = SyntaxTree.Parse(text).Root.Expression;
+        using var e = new AssertingEnumerator(expression);
         if (uPr >= bPr)
         {
             e.AssertNode(SyntaxType.BinaryExpression);

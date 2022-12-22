@@ -20,7 +20,7 @@ public sealed class Binder
     {
         var parent = CreateParentScopes(prev);
         var binder = new Binder(parent);
-        var expr = binder.BindExpression(compilation.Root);
+        var expr = binder.BindExpression(compilation.Expression);
         var variables = binder.Scope.GetVariables();
         return new BoundGlobalScope(prev, variables, expr);
     }
@@ -144,9 +144,19 @@ public sealed class Binder
         var name = assignmentExpression.Identifier.Text;
 
         var expression = BindExpression(assignmentExpression.Expression);
-        var variable = new VariableSymbol(name, expression?.Type ?? typeof(void));
 
-        if (!Scope.TryDeclare(variable))
+        if (!Scope.TryLookup(name, out var variable))
+        {
+            variable = new VariableSymbol(name, expression?.Type ?? typeof(void));
+        }
+        // var variable = new VariableSymbol(name, expression?.Type ?? typeof(void));
+        if (!(expression?.Type ?? typeof(void)).IsAssignableFrom((variable?.Type ?? typeof(void))))
+        {
+            Diagnostics.ReportInvalidCast(variable, expression, assignmentExpression.Span);
+            return new BoundLiteralExpression(null, assignmentExpression.Span);
+        }
+
+        if (!Scope.TryDeclare(variable!))
         {
             Diagnostics.ReportVarAlreadyDeclared(name, assignmentExpression.Span);
             return new BoundLiteralExpression(null, assignmentExpression.Span);

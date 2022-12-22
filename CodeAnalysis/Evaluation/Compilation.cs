@@ -28,7 +28,7 @@ public sealed class Compilation
             if (_global is null)
             {
                 var global = Binder.BindGlobalScope(Prev?.GlobalScope ?? null, Syntax.Root);
-                Interlocked.CompareExchange(ref global, _global, null);
+                Interlocked.CompareExchange(ref _global, global, null);
             }
             return _global!;
         }
@@ -45,33 +45,33 @@ public sealed class Compilation
     {
         var globalScope = GlobalScope;
 
-        if (globalScope.Expression is null || Diagnostics.HasError)
+        if (globalScope?.Expression is null || Diagnostics.HasError)
         {
-            return new EvaluationResult { Value = null };
+            return new EvaluationResult { Value = null , Compilation = this };
         }
         var eval = new Evaluator(globalScope.Expression, vars);
         var res = eval.Evaluate();
         if (Diagnostics.HasError)
         {
-            return new EvaluationResult { Value = null };
+            return new EvaluationResult { Value = null, Compilation = this };
         }
-        return new EvaluationResult { Value = res };
+        return new EvaluationResult { Value = res, Compilation = this };
     }
 
-    public static EvaluationResult EvalLine(string line, Dictionary<VariableSymbol, object?> vars, bool printTree = false)
+    public static EvaluationResult EvalLine(string line, Dictionary<VariableSymbol, object?> vars, bool printTree = false, Compilation? _prev = null)
     {
-        return EvalLine(SourceText.From(line), vars, printTree);
+        return EvalLine(SourceText.From(line), vars, printTree, _prev);
     }
 
-    public static EvaluationResult EvalLine(SourceText line, Dictionary<VariableSymbol, object?> vars, bool printTree = false)
+    public static EvaluationResult EvalLine(SourceText line, Dictionary<VariableSymbol, object?> vars, bool printTree = false, Compilation? _prev = null)
     {
-        var expression = SyntaxTree.Parse(line);
-        var compilation = new Compilation(expression);
+        var syntaxTree = SyntaxTree.Parse(line);
+        var compilation = _prev is null ? new Compilation(syntaxTree) : _prev.ContinueWith(syntaxTree);
         var result = compilation.Evaluate(vars);
         if (printTree)
         {
             Console.ForegroundColor = ConsoleColor.DarkGray;
-            PrintTree(expression.Root);
+            PrintTree(syntaxTree.Root);
             Console.ResetColor();
         }
         return result;

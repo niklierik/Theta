@@ -58,17 +58,6 @@ public class EvaluatorTest
         Diagnostics.Clear();
     }
 
-    [Fact]
-    public void Evaluator_EvalVars()
-    {
-        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
-        Vars.Clear();
-        _ = Compilation.EvalLine("a = 2", Vars);
-        var result = Compilation.EvalLine("a + 2", Vars);
-        Assert.Equal((long)4, result.Value);
-        Diagnostics.Clear();
-    }
-
     private static IEnumerable<(SyntaxType syntax, Func<bool, bool, bool> func)> BooleanOperators
     {
         get
