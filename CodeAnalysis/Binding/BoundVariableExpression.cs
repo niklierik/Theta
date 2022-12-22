@@ -1,6 +1,7 @@
 ﻿using Theta.CodeAnalysis;
 using Theta.CodeAnalysis.Evaluation;
 using Theta.CodeAnalysis.Text;
+using Theta.Transpilers;
 
 namespace Theta.CodeAnalysis.Binding;
 
@@ -26,7 +27,7 @@ public sealed class BoundVariableExpression : BoundExpression
     }
     */
 
-    public override string Stringify(StatementProcessor evaluator)
+    public override string Stringify(Transpiler transpiler)
     {
         return Variable.Name;
     }

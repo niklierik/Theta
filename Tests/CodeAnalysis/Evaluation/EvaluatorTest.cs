@@ -1,4 +1,6 @@
-﻿namespace Theta.Tests.CodeAnalysis.Evaluation;
+﻿/*
+
+namespace Theta.Tests.CodeAnalysis.Evaluation;
 
 using System;
 using System.Collections.Generic;
@@ -13,7 +15,7 @@ public class EvaluatorTest
 
     private Dictionary<VariableSymbol, object?> Vars { get; set; } = new();
 
-    /*
+    
     [Theory]
     [InlineData("1", (long) 1)]
     [InlineData("1+1", (long) 2)]
@@ -57,7 +59,7 @@ public class EvaluatorTest
         var result = Compilation.CompileText(expression, Vars);
         Assert.Equal(value, result.Value);
         Diagnostics.Clear();
-    }*/
+    }
 
     private static IEnumerable<(SyntaxType syntax, Func<bool, bool, bool> func)> BooleanOperators
     {
@@ -94,4 +96,4 @@ public class EvaluatorTest
             }
         }
     }
-}
+}*/

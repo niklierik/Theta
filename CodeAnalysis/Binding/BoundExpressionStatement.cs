@@ -14,6 +14,6 @@ public sealed class BoundExpressionStatement : BoundStatement
 
     public override void Transpile(Transpiler transpiler, int indentation = 0)
     {
-        return 
+        transpiler.TranspileExpressionStatement(this, indentation);
     }
 }

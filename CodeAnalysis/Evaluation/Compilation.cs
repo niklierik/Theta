@@ -51,8 +51,7 @@ public sealed class Compilation
         {
             return; //new CompileResult { Value = null, Compilation = this };
         }
-        var eval = new StatementProcessor(globalScope.Statement, transpiler);
-        eval.Transpile();
+        transpiler.Transpile(globalScope.Statement);
         /*if (Diagnostics.HasError)
         {
           //  return new CompileResult { Value = null, Compilation = this };
@@ -86,9 +85,10 @@ public sealed class Compilation
     }
 
 
-    public static void CompileText(SourceText line, Transpiler transpiler)
+    public static void CompileText(SourceText input, Transpiler transpiler)
     {
-        var syntaxTree = SyntaxTree.Parse(line);
+        Diagnostics.Instance.Input = input;
+        var syntaxTree = SyntaxTree.Parse(input);
         var compilation = new Compilation(syntaxTree);
         // var result =
         compilation.Compile(transpiler);

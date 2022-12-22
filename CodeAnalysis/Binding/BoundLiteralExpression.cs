@@ -4,6 +4,7 @@ using System;
 using Theta.CodeAnalysis.Evaluation;
 using Theta.CodeAnalysis.Syntax;
 using Theta.CodeAnalysis.Text;
+using Theta.Transpilers;
 
 public sealed class BoundLiteralExpression : BoundExpression
 {
@@ -28,7 +29,7 @@ public sealed class BoundLiteralExpression : BoundExpression
     }
     */
 
-    public override string Stringify(StatementProcessor evaluator)
+    public override string Stringify(Transpiler transpiler)
     {
         throw new NotImplementedException();
     }

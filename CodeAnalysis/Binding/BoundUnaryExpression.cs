@@ -5,6 +5,7 @@ using Theta.CodeAnalysis.Evaluation;
 using Theta.CodeAnalysis.Messages;
 using Theta.CodeAnalysis.Syntax;
 using Theta.CodeAnalysis.Text;
+using Theta.Transpilers;
 
 public sealed class BoundUnaryExpression : BoundExpression
 {
@@ -47,7 +48,7 @@ public sealed class BoundUnaryExpression : BoundExpression
     }
     */
 
-    public override string Stringify(StatementProcessor evaluator)
+    public override string Stringify(Transpiler transpiler)
     {
         throw new NotImplementedException();
     }

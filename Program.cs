@@ -110,7 +110,7 @@ internal static class Program
                 }
                 // var result = Compilation.EvalLine(input, _vars, _printTree, _prev);
                 Compilation.CompileText(input, _transpiler);
-                Diagnostics.ShowErrors(input);
+                Diagnostics.ShowErrors();
 
                 if (Diagnostics.HasError)
                 {
@@ -123,7 +123,7 @@ internal static class Program
             }
             catch (HasErrorException)
             {
-                Diagnostics.ShowErrors(input);
+                Diagnostics.ShowErrors();
             }
             Diagnostics.Clear();
         }

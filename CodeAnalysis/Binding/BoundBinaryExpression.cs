@@ -2,6 +2,7 @@
 using Theta.CodeAnalysis.Messages;
 using Theta.CodeAnalysis.Syntax;
 using Theta.CodeAnalysis.Text;
+using Theta.Transpilers;
 
 namespace Theta.CodeAnalysis.Binding;
 
@@ -105,7 +106,7 @@ public sealed class BoundBinaryExpression : BoundExpression
     }
     */
 
-    public override string Stringify(StatementProcessor evaluator)
+    public override string Stringify(Transpiler transpiler)
     {
         throw new NotImplementedException();
     }

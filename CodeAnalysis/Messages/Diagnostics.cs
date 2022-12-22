@@ -31,13 +31,9 @@ public sealed class Diagnostics : IEnumerable<Diagnostic>
         }
     }
 
-    public static void ShowErrors(SourceText? input)
+    public static void ShowErrors()
     {
-        if (input is null)
-        {
-            return;
-        }
-        ReportAll(input);
+        ReportAll();
     }
 
     public List<Diagnostic> Messages { get; private set; } = new();
@@ -57,12 +53,12 @@ public sealed class Diagnostics : IEnumerable<Diagnostic>
         }
     }
 
-    public static void ReportAll(SourceText input)
+    public static void ReportAll()
     {
-        ReportAll(Console.Write, input);
+        ReportAll(Console.Write);
     }
 
-    public static void ReportAll(Action<string>? write, SourceText input)
+    public static void ReportAll(Action<string>? write)
     {
         if (write is null)
         {
@@ -70,6 +66,7 @@ public sealed class Diagnostics : IEnumerable<Diagnostic>
         }
         foreach (var d in Instance)
         {
+            var input = d.Source;
             Console.ForegroundColor = d.MessageType.GetColor();
             int startLineIndex = input.GetLineIndex(d.Span.Start);
             int endLineIndex = input.GetLineIndex(d.Span.Start + d.Span.Length);
@@ -86,11 +83,21 @@ public sealed class Diagnostics : IEnumerable<Diagnostic>
             }
             write(d.ToString(startLineIndex, endLineIndex, -start?.Start ?? 0));
             write(Environment.NewLine);
-            WriteWrongLine(write, input, d, d.Span);
+            WriteWrongLine(write, input, d, GetLines(input, startLineIndex, endLineIndex).ToList());
             write(Environment.NewLine);
             write(Environment.NewLine);
         }
         Console.ResetColor();
+    }
+
+    private static IEnumerable<TextLine> GetLines(SourceText input, int startLineIndex, int endLineIndex)
+    {
+        var start = Math.Max(0, startLineIndex);
+        var end = Math.Min(endLineIndex, input.Lines.Count - 1);
+        for (int i = start; i < end; i++)
+        {
+            yield return input.Lines[i];
+        }
     }
 
     public static void Clear()
@@ -98,12 +105,15 @@ public sealed class Diagnostics : IEnumerable<Diagnostic>
         Instance.Messages.Clear();
     }
 
-    private static void WriteWrongLine(Action<string> write, SourceText input, Diagnostic diagnostic, TextSpan span)
+    private static void WriteWrongLine(Action<string> write, SourceText input, Diagnostic diagnostic, IEnumerable<TextLine> including)
     {
-        for (int i = span.Start; i < span.Start + span.Length; i++)
+        foreach (var line in including)
         {
-            Console.ForegroundColor = (diagnostic.Span.In(i)) ? diagnostic.MessageType.GetColor() : ConsoleColor.Gray;
-            write(input[i].ToString());
+            for (int i = line.Start; i < line.Start + line.LengthIncludingLineBreak; i++)
+            {
+                Console.ForegroundColor = (diagnostic.Span.In(i)) ? diagnostic.MessageType.GetColor() : ConsoleColor.Gray;
+                write(input[i].ToString());
+            }
         }
         Console.ResetColor();
     }
