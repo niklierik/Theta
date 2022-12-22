@@ -9,15 +9,18 @@ using Theta.CodeAnalysis.Evaluation;
 using Theta.CodeAnalysis.Syntax;
 using Theta.CodeAnalysis;
 using Theta.CodeAnalysis.Text;
+using System.Text.RegularExpressions;
+using Theta.Transpilers;
 
 internal static class Program
 {
 
 
-    private static bool _printTree = false;
+    // private static bool _printTree = false;
     private static bool _multiline = false;
-    private static Dictionary<VariableSymbol, object?> _vars = new();
-    private static Compilation _prev = null;
+    // private static Dictionary<VariableSymbol, object?> _vars = new();
+    // private static Compilation? _prev = null;
+    private static Transpilers.Transpiler _transpiler = new CPPTranspiler("output.h", "output.cpp");
 
     private static void ConsoleSetup()
     {
@@ -25,7 +28,7 @@ internal static class Program
         CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
     }
 
-    
+
 
     private static void ConsumeArgs(string[] args)
     {
@@ -35,10 +38,12 @@ internal static class Program
             {
                 _multiline = true;
             }
+           /*
             if (arg.ToLower() == "-printtree")
             {
                 _printTree = true;
             }
+           */
         }
     }
 
@@ -51,7 +56,7 @@ internal static class Program
 
             " > ".Log(ConsoleColor.DarkGray, false);
 
-            var input = SourceText.FromConsole(_multiline);
+            SourceText? input = SourceText.FromConsole(_multiline);
             try
             {
                 if (input.IsEmpty)
@@ -72,6 +77,7 @@ internal static class Program
                     _multiline.OnOff().Log(_multiline.GoodBadColor());
                     continue;
                 }
+                /*
                 if (inputtxt == "#printtree()")
                 {
                     _printTree = !_printTree;
@@ -79,19 +85,31 @@ internal static class Program
                     _printTree.OnOff().Log(_printTree.GoodBadColor());
                     continue;
                 }
+                */
                 if (inputtxt == "#clear()")
                 {
                     Console.Clear();
                     continue;
                 }
+                /*
                 if (inputtxt == "#clearvars()")
                 {
                     _vars.Clear();
                     continue;
                 }
+                */
+                (input, var success) = TryOpenFile(input);
+                if (success)
+                {
+                    "Opening file...".Log(ConsoleColor.DarkGray);
+                }
                 #endregion
-
-                var result = Compilation.EvalLine(input, _vars, _printTree, _prev);
+                if (input is null)
+                {
+                    continue;
+                }
+                // var result = Compilation.EvalLine(input, _vars, _printTree, _prev);
+                Compilation.CompileText(input, _transpiler);
                 Diagnostics.ShowErrors(input);
 
                 if (Diagnostics.HasError)
@@ -99,9 +117,7 @@ internal static class Program
                     Diagnostics.Clear();
                     continue;
                 }
-                _prev = result.Compilation;
-
-                $"   {result.Value ?? "null"}".Log((result?.Value?.GetType() ?? typeof(void)).GetColor());
+                $"Transpiling was successful.".Log(ConsoleColor.Green);
 
                 // $"{eval.AsStringVersion()}".Log(ConsoleColor.DarkGray);
             }
@@ -113,7 +129,23 @@ internal static class Program
         }
     }
 
-
-
-
+    private static (SourceText? input, bool success) TryOpenFile(SourceText? input)
+    {
+        if (input is null)
+        {
+            return (null, false);
+        }
+        var regex = new Regex(@"^#file\((?<file>.*)\)$");
+        var match = regex.Match(input.ToString());
+        if (match.Success)
+        {
+            var file = match.Groups["file"].Value;
+            if (!file.ToLower().EndsWith(".th"))
+            {
+                $"WARNING: You should only open .th files.{Environment.NewLine}{Environment.NewLine}".Log(ConsoleColor.Yellow);
+            }
+            return (SourceText.FromFile(file), true);
+        }
+        return (input, false);
+    }
 }

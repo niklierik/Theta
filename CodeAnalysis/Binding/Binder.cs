@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using Theta.CodeAnalysis.Messages;
 using Theta.CodeAnalysis.Syntax;
 using Theta.CodeAnalysis;
+using Theta.CodeAnalysis.Syntax.Statements;
 
 namespace Theta.CodeAnalysis.Binding;
 
@@ -20,9 +21,9 @@ public sealed class Binder
     {
         var parent = CreateParentScopes(prev);
         var binder = new Binder(parent);
-        var expr = binder.BindExpression(compilation.Expression);
+        var statement = binder.BindStatement(compilation.Statement);
         var variables = binder.Scope.GetVariables();
-        return new BoundGlobalScope(prev, variables, expr);
+        return new BoundGlobalScope(prev, variables, statement);
     }
 
     private static BoundScope? CreateParentScopes(BoundGlobalScope? prev)
@@ -48,6 +49,51 @@ public sealed class Binder
     }
 
     public BoundScope Scope { get; private set; }
+
+    public BoundStatement? BindStatement(StatementSyntax? syntax)
+    {
+        if (syntax is null)
+        {
+            return null;
+        }
+        switch (syntax.Type)
+        {
+            case SyntaxType.BlockStatement:
+                return BindBlockStatement(syntax as BlockStatementSyntax);
+            case SyntaxType.ExpressionStatement:
+                return BindExpressionStatement(syntax as ExpressionStatement);
+            default:
+                throw new Exception("Invalid statement was give. This should not happen.");
+        }
+
+    }
+
+    private BoundStatement? BindExpressionStatement(ExpressionStatement? expressionStatement)
+    {
+        return new BoundExpressionStatement(BindExpression(expressionStatement?.Expression)!);
+    }
+
+    private IEnumerable<BoundStatement> BindStatements(IEnumerable<StatementSyntax?>? statements)
+    {
+        if (statements is null)
+        {
+            yield break;
+        }
+        foreach (var statement in statements)
+        {
+            var bound = BindStatement(statement);
+            if (bound is not null)
+            {
+                yield return bound;
+            }
+        }
+    }
+
+    private BoundStatement? BindBlockStatement(BlockStatementSyntax? blockStatementSyntax)
+    {
+        IEnumerable<BoundStatement> statements = BindStatements(blockStatementSyntax?.Statements);
+        return new BoundBlockStatement(statements.ToList());
+    }
 
     public BoundExpression? BindExpression(ExpressionSyntax? syntax)
     {
@@ -161,7 +207,7 @@ public sealed class Binder
             Diagnostics.ReportVarAlreadyDeclared(name, assignmentExpression.Span);
             return new BoundLiteralExpression(null, assignmentExpression.Span);
         }
-        return new BoundAssignmentExpression(variable, expression, assignmentExpression.Span);
+        return new BoundAssignmentExpression(variable!, expression, assignmentExpression.Span);
     }
 
 }

@@ -1,7 +1,8 @@
 {
   "profiles": {
     "Theta": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "workingDirectory": "X:\\Workspace\\Theta"
     }
   }
 }

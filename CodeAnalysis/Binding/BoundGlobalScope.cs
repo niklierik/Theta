@@ -2,14 +2,14 @@
 
 public sealed class BoundGlobalScope
 {
-    public BoundGlobalScope(BoundGlobalScope? prev, List<VariableSymbol> declaredVars, BoundExpression? expression)
+    public BoundGlobalScope(BoundGlobalScope? prev, List<VariableSymbol> declaredVars, BoundStatement? statement)
     {
         Prev = prev;
         DeclaredVars = declaredVars;
-        Expression = expression;
+        Statement = statement;
     }
 
     public BoundGlobalScope? Prev { get; }
     public List<VariableSymbol> DeclaredVars { get; }
-    public BoundExpression? Expression { get; }
+    public BoundStatement? Statement { get; }
 }

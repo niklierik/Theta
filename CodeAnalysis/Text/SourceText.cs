@@ -90,7 +90,7 @@ public sealed class SourceText
         return 0;
     }
 
-    public static SourceText From(string text)
+    public static SourceText FromText(string text)
     {
         return new SourceText(text);
     }
@@ -113,7 +113,7 @@ public sealed class SourceText
         Console.ResetColor();
         if (!multiline)
         {
-            return SourceText.From(Console.ReadLine() ?? "");
+            return SourceText.FromText(Console.ReadLine() ?? "");
         }
         string input = "";
         string? line;
@@ -123,36 +123,22 @@ public sealed class SourceText
             " | ".Log(ConsoleColor.DarkGray, false);
             Console.ResetColor();
         }
-        return SourceText.From(input);
+        return SourceText.FromText(input);
     }
-}
 
-public sealed class TextLine
-{
-    public SourceText Text { get; }
-    public int Start { get; }
-    public int Length { get; }
-    public int LengthIncludingLineBreak { get; }
-    public TextSpan Span => new(Start, Length);
-    public TextSpan SpanIncludingLineBreak => new(Start, LengthIncludingLineBreak);
-
-    public int End => Start + Length;
-
-    public TextLine(SourceText text, int start, int length, int lengthIncludingLineBreak)
+    public static SourceText? FromFile(string path)
     {
-        Text = text;
-        Start = start;
-        Length = length;
-        LengthIncludingLineBreak = lengthIncludingLineBreak;
+        try
+        {
+            using var reader = new StreamReader(path);
+            var text = reader.ReadToEnd();
+            return SourceText.FromText(text);
+        }
+        catch (Exception ex)
+        {
+            $"Unable to load file '{path}':".Log(ConsoleColor.Red);
+            ex.Log(ConsoleColor.Red);
+            return null;
+        }
     }
-
-
-    public override string ToString()
-    {
-        return Text.ToString(Span);
-    }
-
-    public string ToString(int start, int length) => ToString().Substring(start, length);
-    public string ToString(TextSpan span) => ToString(span.Start, span.Length);
-
 }

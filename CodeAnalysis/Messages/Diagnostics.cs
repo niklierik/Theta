@@ -31,8 +31,12 @@ public sealed class Diagnostics : IEnumerable<Diagnostic>
         }
     }
 
-    public static void ShowErrors(SourceText input)
+    public static void ShowErrors(SourceText? input)
     {
+        if (input is null)
+        {
+            return;
+        }
         ReportAll(input);
     }
 
@@ -110,9 +114,11 @@ public sealed class Diagnostics : IEnumerable<Diagnostic>
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
+    public SourceText? Input { get; set; } = null;
+
     private static void Report(TextSpan span, string message, MessageType type = MessageType.Error)
     {
-        Instance.Messages.Add(new(span, message, type));
+        Instance.Messages.Add(new(span, message, Instance.Input!, type));
     }
 
     public static void ReportInvalidInt64(string text, TextSpan span)
@@ -190,9 +196,9 @@ public sealed class Diagnostics : IEnumerable<Diagnostic>
         Report(span, $"Undefined object with name '{name}'.", MessageType.Warning);
     }
 
-    public static void ReportInvalidCast(CodeAnalysis.VariableSymbol key, BoundExpression? expression, TextSpan span)
+    public static void ReportInvalidCast(CodeAnalysis.VariableSymbol? key, BoundExpression? expression, TextSpan span)
     {
-        Report(span, $"Cannot cast {expression?.Type ?? typeof(void)} to {key.Type} for variable {key.Name}.", MessageType.Warning);
+        Report(span, $"Cannot cast {expression?.Type ?? typeof(void)} to {key?.Type ?? typeof(void)} for variable {key?.Name ?? "unkown"}.", MessageType.Warning);
     }
 
     public static void ReportVarAlreadyDeclared(string var, TextSpan span)

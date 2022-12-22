@@ -16,13 +16,20 @@ public sealed class BoundLiteralExpression : BoundExpression
 
     public override Type Type => Value?.GetType() ?? typeof(void);
 
-    public override BoundNodeType NodeType => BoundNodeType.LiteralExpression;
+    // public override BoundNodeType NodeType => BoundNodeType.LiteralExpression;
 
     public object? Value { get; }
     public override TextSpan Span { get; }
 
+    /*
     public override object? Evaluate(Evaluator eval)
     {
         return Value;
+    }
+    */
+
+    public override string Stringify(StatementProcessor evaluator)
+    {
+        throw new NotImplementedException();
     }
 }

@@ -5,6 +5,8 @@ using Theta.CodeAnalysis.Messages;
 using Theta.CodeAnalysis.Syntax;
 using Theta.CodeAnalysis;
 using Theta.CodeAnalysis.Text;
+using System;
+using Theta.Transpilers;
 
 public sealed class Compilation
 {
@@ -41,40 +43,62 @@ public sealed class Compilation
         return new(this, next);
     }
 
-    public EvaluationResult Evaluate(Dictionary<VariableSymbol, object?> vars)
+    public void Compile(Transpiler transpiler)
     {
         var globalScope = GlobalScope;
 
-        if (globalScope?.Expression is null || Diagnostics.HasError)
+        if (globalScope?.Statement is null || Diagnostics.HasError)
         {
-            return new EvaluationResult { Value = null , Compilation = this };
+            return; //new CompileResult { Value = null, Compilation = this };
         }
-        var eval = new Evaluator(globalScope.Expression, vars);
+        var eval = new StatementProcessor(globalScope.Statement, transpiler);
+        eval.Transpile();
+        /*if (Diagnostics.HasError)
+        {
+          //  return new CompileResult { Value = null, Compilation = this };
+        }
+        // return new CompileResult { Value = res, Compilation = this };
+        */
+    }
+
+    /*
+    [Obsolete("Use normal evaluator", true)]
+    public CompileResult Evaluate(Dictionary<VariableSymbol, object?> vars)
+    {
+        var globalScope = GlobalScope;
+
+        if (globalScope?.Statement is null || Diagnostics.HasError)
+        {
+            return new CompileResult { Value = null, Compilation = this };
+        }
+        var eval = new StatementProcessor(globalScope.Statement, vars);
         var res = eval.Evaluate();
         if (Diagnostics.HasError)
         {
-            return new EvaluationResult { Value = null, Compilation = this };
+            return new CompileResult { Value = null, Compilation = this };
         }
-        return new EvaluationResult { Value = res, Compilation = this };
-    }
+        return new CompileResult { Value = res, Compilation = this };
+    }*/
 
-    public static EvaluationResult EvalLine(string line, Dictionary<VariableSymbol, object?> vars, bool printTree = false, Compilation? _prev = null)
+    public static void CompileText(string line, Transpiler transpiler)
     {
-        return EvalLine(SourceText.From(line), vars, printTree, _prev);
+        CompileText(SourceText.FromText(line), transpiler);
     }
 
-    public static EvaluationResult EvalLine(SourceText line, Dictionary<VariableSymbol, object?> vars, bool printTree = false, Compilation? _prev = null)
+
+    public static void CompileText(SourceText line, Transpiler transpiler)
     {
         var syntaxTree = SyntaxTree.Parse(line);
-        var compilation = _prev is null ? new Compilation(syntaxTree) : _prev.ContinueWith(syntaxTree);
-        var result = compilation.Evaluate(vars);
-        if (printTree)
+        var compilation = new Compilation(syntaxTree);
+        // var result =
+        compilation.Compile(transpiler);
+        /*if (printTree)
         {
             Console.ForegroundColor = ConsoleColor.DarkGray;
             PrintTree(syntaxTree.Root);
             Console.ResetColor();
-        }
-        return result;
+        }*/
+        // return result;
     }
 
     public static void PrintTree(SyntaxNode node, string indent = "", bool isLast = true)

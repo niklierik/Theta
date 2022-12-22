@@ -4,10 +4,16 @@ using System.Globalization;
 using Theta.CodeAnalysis;
 using Theta.CodeAnalysis.Messages;
 using Theta.CodeAnalysis.Syntax;
+using Theta.CodeAnalysis.Syntax.Statements;
 
 public class ParserTest
 {
 
+
+    private ExpressionSyntax? ParseExpression(string text)
+    {
+        return Assert.IsType<ExpressionStatement>(SyntaxTree.Parse(text).Root.Statement).Expression;
+    }
 
     [Theory]
     [MemberData(nameof(GetBinaryOperatorPairsData))]
@@ -21,7 +27,8 @@ public class ParserTest
         var pr1 = op1.GetBinaryOperatorPrecedence();
         var pr2 = op2.GetBinaryOperatorPrecedence();
         var text = $"a {text1} b {text2} c";
-        var expression = SyntaxTree.Parse(text).Root.Expression;
+        var expression = ParseExpression(text);
+        Assert.NotNull(expression);
         using var e = new AssertingEnumerator(expression);
         if (pr1 >= pr2)
         {
@@ -65,7 +72,8 @@ public class ParserTest
         var uPr = unary.GetUnaryOperatorPrecedence();
         var bPr = binary.GetBinaryOperatorPrecedence();
         var text = $"{uText} a {bText} b";
-        var expression = SyntaxTree.Parse(text).Root.Expression;
+        var expression = ParseExpression(text);
+        Assert.NotNull(expression);
         using var e = new AssertingEnumerator(expression);
         if (uPr >= bPr)
         {

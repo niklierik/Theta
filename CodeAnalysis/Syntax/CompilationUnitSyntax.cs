@@ -1,19 +1,19 @@
 ﻿namespace Theta.CodeAnalysis.Syntax;
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Theta.CodeAnalysis.Binding;
+using Theta.CodeAnalysis.Syntax.Statements;
 
 public sealed class CompilationUnitSyntax : SyntaxNode
 {
 
 
-    public CompilationUnitSyntax(ExpressionSyntax expression, SyntaxToken eof)
+    public CompilationUnitSyntax(StatementSyntax expression, SyntaxToken eof)
     {
-        Expression = expression;
+        Statement = expression;
         EOF = eof;
     }
 
@@ -25,11 +25,11 @@ public sealed class CompilationUnitSyntax : SyntaxNode
     {
         get
         {
-            yield return Expression;
+            yield return Statement;
             yield return EOF;
         }
     }
 
-    public ExpressionSyntax Expression { get; }
+    public StatementSyntax Statement { get; }
     public SyntaxToken EOF { get; }
 }

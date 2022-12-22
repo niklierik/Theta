@@ -8,5 +8,5 @@ using System.Threading.Tasks;
 
 public abstract class BoundNode
 {
-    public abstract BoundNodeType NodeType { get; }
+    // public abstract BoundNodeType NodeType { get; }
 }

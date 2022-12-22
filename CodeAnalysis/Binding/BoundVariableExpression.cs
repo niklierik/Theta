@@ -14,14 +14,20 @@ public sealed class BoundVariableExpression : BoundExpression
 
     public override Type Type => Variable.Type;
 
-    public override BoundNodeType NodeType => BoundNodeType.VariableExpression;
-
     public string Name => Variable.Name;
     public VariableSymbol Variable { get; }
 
     public override TextSpan Span { get; }
+
+    /*
     public override object? Evaluate(Evaluator eval)
     {
         return eval.Vars[Variable];
+    }
+    */
+
+    public override string Stringify(StatementProcessor evaluator)
+    {
+        return Variable.Name;
     }
 }

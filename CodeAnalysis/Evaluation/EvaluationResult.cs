@@ -2,10 +2,10 @@
 
 namespace Theta.CodeAnalysis.Evaluation;
 
-public sealed class EvaluationResult
+public sealed class CompileResult
 {
 
-    public EvaluationResult()
+    public CompileResult()
     {
     }
 

@@ -99,29 +99,92 @@ public enum SyntaxType
     /// <summary>
     /// (
     /// </summary>
-    OpenGroup,
+    OpenGroupToken,
 
     /// <summary>
     /// )
     /// </summary>
-    CloseGroup,
+    CloseGroupToken,
     /// <summary>
     /// {
     /// </summary>
-    OpenBlock,
+    OpenBlockToken,
     /// <summary>
     /// }
     /// </summary>
-    CloseBlock,
+    CloseBlockToken,
 
     /// <summary>
     /// [
     /// </summary>
-    OpenArray,
+    OpenArrayToken,
+
     /// <summary>
     /// ]
     /// </summary>
-    CloseArray,
+    CloseArrayToken,
+
+    /// <summary>
+    /// ;
+    /// </summary>
+    SemicolonToken,
+
+    /// <summary>
+    /// .
+    /// </summary>
+    DotToken,
+
+    /// <summary>
+    /// ,
+    /// </summary>
+    CommaToken,
+
+    // Keywords
+    /// <summary>
+    /// true
+    /// </summary>
+    TrueKeyword,
+
+    /// <summary>
+    /// false
+    /// </summary>
+    FalseKeyword,
+
+    /// <summary>
+    /// null
+    /// </summary>
+    NullKeyword,
+
+    /// <summary>
+    /// let
+    /// </summary>
+    LetKeyword,
+
+    /// <summary>
+    /// const
+    /// </summary>
+    ConstKeyword,
+
+    /// <summary>
+    /// internal
+    /// </summary>
+    InternalKeyword,
+
+    /// <summary>
+    /// public
+    /// </summary>
+    PublicKeyword,
+
+    /// <summary>
+    /// protected
+    /// </summary>
+    ProtectedKeyword,
+
+    /// <summary>
+    /// private
+    /// </summary>
+    PrivateKeyword,
+
     // Expressions
     LiteralExpression,
     BinaryExpression,
@@ -129,19 +192,8 @@ public enum SyntaxType
     UnaryExpression,
     NameExpression,
     AssignmentExpression,
-    // Keywords
-
-    /// <summary>
-    /// true
-    /// </summary>
-    TrueKeyword,
-    /// <summary>
-    /// false
-    /// </summary>
-    FalseKeyword,
-    /// <summary>
-    /// null
-    /// </summary>
-    NullKeyword,
     CompilationUnitNode,
+    // Statements
+    ExpressionStatement,
+    BlockStatement,
 }

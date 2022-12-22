@@ -17,12 +17,13 @@ public sealed class BoundUnaryExpression : BoundExpression
 
     public override Type Type => Operator.ResultType;
 
-    public override BoundNodeType NodeType => BoundNodeType.UnaryExpression;
+   // public override BoundNodeType NodeType => BoundNodeType.UnaryExpression;
 
     public BoundExpression Operand { get; }
     public BoundUnaryOperator Operator { get; }
     public override TextSpan Span { get; }
 
+    /*
     public override object? Evaluate(Evaluator eval)
     {
         var operand = eval.EvaluateExpression(Operand);
@@ -43,5 +44,11 @@ public sealed class BoundUnaryExpression : BoundExpression
                 Diagnostics.ReportUndefinedUnaryBehaviour(this, Span);
                 return null;
         }
+    }
+    */
+
+    public override string Stringify(StatementProcessor evaluator)
+    {
+        throw new NotImplementedException();
     }
 }

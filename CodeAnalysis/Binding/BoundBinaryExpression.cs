@@ -23,8 +23,9 @@ public sealed class BoundBinaryExpression : BoundExpression
 
     public override Type Type => Operator.ResultType;
 
-    public override BoundNodeType NodeType => BoundNodeType.BinaryExpression;
+   // public override BoundNodeType NodeType => BoundNodeType.BinaryExpression;
 
+    /*
     public override object? Evaluate(Evaluator eval)
     {
         var left = eval.EvaluateExpression(Left);
@@ -102,5 +103,10 @@ public sealed class BoundBinaryExpression : BoundExpression
         Diagnostics.ReportUndefinedBinaryBehaviour(this, Span);
         return null;
     }
+    */
 
+    public override string Stringify(StatementProcessor evaluator)
+    {
+        throw new NotImplementedException();
+    }
 }

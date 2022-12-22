@@ -16,7 +16,7 @@ public sealed class SyntaxTree
 
     public static SyntaxTree Parse(string text)
     {
-        return Parse(SourceText.From(text));
+        return Parse(SourceText.FromText(text));
     }
 
     public static SyntaxTree Parse(SourceText text)

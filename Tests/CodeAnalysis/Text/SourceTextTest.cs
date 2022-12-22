@@ -16,7 +16,7 @@ public class SourceTextTest
     [InlineData(".\r\n\r\n", 3)]
     public void SourceText_IncludeLastLine(string text, int expectedLineCount)
     {
-        var sourceText = SourceText.From(text);
+        var sourceText = SourceText.FromText(text);
         Assert.Equal(expectedLineCount, sourceText.Lines.Count);
     }
 }

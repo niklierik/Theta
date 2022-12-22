@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Theta.CodeAnalysis.Messages;
 using Theta.CodeAnalysis;
 using Theta.CodeAnalysis.Text;
+using Theta.CodeAnalysis.Syntax.Statements;
 
 internal sealed class Parser
 {
@@ -33,9 +34,9 @@ internal sealed class Parser
 
     public CompilationUnitSyntax ParseCompilationUnit()
     {
-        var expression = ParseExpression();
+        var statement = ParseStatement();
         var eof = MatchToken(SyntaxType.EndOfFile);
-        return new CompilationUnitSyntax(expression, eof);
+        return new CompilationUnitSyntax(statement, eof);
     }
 
     /*
@@ -144,7 +145,7 @@ internal sealed class Parser
     {
         return Current.Type switch
         {
-            SyntaxType.OpenGroup => ParseGroupExpression(),
+            SyntaxType.OpenGroupToken => ParseGroupExpression(),
             SyntaxType.TrueKeyword or SyntaxType.FalseKeyword => ParseBooleanExpression(),
             SyntaxType.NullKeyword => ParseNull(),
             SyntaxType.NumberToken => ParseNumberLiteral(),
@@ -176,6 +177,10 @@ internal sealed class Parser
     private ExpressionSyntax ParseNamedExpression()
     {
         var identifierToken = NextToken();
+        if (identifierToken.Type != SyntaxType.IdentifierToken)
+        {
+            throw new Exception($"Token type {identifierToken.Type} has undefined behaviour.");
+        }
         return new NamedExpressionSyntax(identifierToken);
     }
 
@@ -189,11 +194,13 @@ internal sealed class Parser
         };
     }
 
+
+
     private ExpressionSyntax ParseGroupExpression()
     {
         var left = NextToken();
         var expression = ParseExpression();
-        var right = MatchToken(SyntaxType.CloseGroup);
+        var right = MatchToken(SyntaxType.CloseGroupToken);
         return new BracketExpression()
         {
             Open = left,
@@ -201,5 +208,39 @@ internal sealed class Parser
             Expression = expression
         };
     }
+    private StatementSyntax ParseStatement()
+    {
+        if (Current.Type == SyntaxType.OpenBlockToken)
+        {
+            return ParseBlockStatement();
+        }
+        return ParseExpressionStatement();
+    }
 
+    private SyntaxToken ParseSemicolon()
+    {
+        return MatchToken(SyntaxType.SemicolonToken);
+    }
+
+    private ExpressionStatement ParseExpressionStatement()
+    {
+        var expression = ParseExpression();
+        // NextToken();
+        var semicolon = ParseSemicolon();
+        return new ExpressionStatement(expression, semicolon);
+    }
+
+    private BlockStatementSyntax ParseBlockStatement()
+    {
+        var statements = new List<StatementSyntax>();
+
+        var open = MatchToken(SyntaxType.OpenBlockToken);
+        while (Current.Type != SyntaxType.EndOfFile && Current.Type != SyntaxType.CloseBlockToken)
+        {
+            var statement = ParseStatement();
+            statements.Add(statement);
+        }
+        var close = MatchToken(SyntaxType.CloseBlockToken);
+        return new BlockStatementSyntax(open, close, statements);
+    }
 }

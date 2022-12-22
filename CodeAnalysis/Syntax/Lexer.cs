@@ -57,7 +57,7 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
         return substr == text;
     }
 
-    public Lexer(string text) : this(SourceText.From(text))
+    public Lexer(string text) : this(SourceText.FromText(text))
     {
 
     }
@@ -76,7 +76,7 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
         _pos++;
     }
 
-    private void CheckInvariantCulture()
+    private static void CheckInvariantCulture()
     {
         if (CultureInfo.CurrentCulture != CultureInfo.InvariantCulture)
         {
@@ -193,12 +193,15 @@ public sealed class Lexer : IEnumerable<SyntaxToken>
         SyntaxType.LessToken,
         SyntaxType.GreaterToken,
         SyntaxType.EqualsToken,
-        SyntaxType.OpenGroup,
-        SyntaxType.CloseGroup,
-        SyntaxType.OpenBlock,
-        SyntaxType.CloseBlock,
-        SyntaxType.OpenArray,
-        SyntaxType.CloseArray,
+        SyntaxType.OpenGroupToken,
+        SyntaxType.CloseGroupToken,
+        SyntaxType.OpenBlockToken,
+        SyntaxType.CloseBlockToken,
+        SyntaxType.OpenArrayToken,
+        SyntaxType.CloseArrayToken,
+        SyntaxType.SemicolonToken,
+        SyntaxType.CommaToken,
+        SyntaxType.DotToken
     };
 
     private SyntaxToken? ReadConcreteTokens()

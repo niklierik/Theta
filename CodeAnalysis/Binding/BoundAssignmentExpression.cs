@@ -15,17 +15,24 @@ public sealed class BoundAssignmentExpression : BoundExpression
 
     public override Type Type => Expression?.Type ?? typeof(void);
 
-    public override BoundNodeType NodeType => BoundNodeType.AssignmentExpression;
+    // public override BoundNodeType NodeType => BoundNodeType.AssignmentExpression;
 
     public VariableSymbol Var { get; }
     public BoundExpression? Expression { get; }
 
     public override TextSpan Span { get; }
 
+    /*
     public override object? Evaluate(Evaluator eval)
     {
         var value = eval.EvaluateExpression(Expression);
-        eval.Vars[Var] = value;
+        // eval.Vars[Var] = value;
         return value;
+    }
+    */
+
+    public override string Stringify(StatementProcessor evaluator)
+    {
+        throw new NotImplementedException();
     }
 }
