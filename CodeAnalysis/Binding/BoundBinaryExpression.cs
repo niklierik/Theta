@@ -24,7 +24,7 @@ public sealed class BoundBinaryExpression : BoundExpression
 
     public override Type Type => Operator.ResultType;
 
-   // public override BoundNodeType NodeType => BoundNodeType.BinaryExpression;
+    // public override BoundNodeType NodeType => BoundNodeType.BinaryExpression;
 
     /*
     public override object? Evaluate(Evaluator eval)
@@ -106,8 +106,10 @@ public sealed class BoundBinaryExpression : BoundExpression
     }
     */
 
-    public override string Stringify(Transpiler transpiler)
+    public override string Stringify(Transpiler transpiler, int indentation = 0)
     {
-        throw new NotImplementedException();
+        var left = transpiler.StringifyExpression(Left);
+        var right = transpiler.StringifyExpression(Right);
+        return $"{Operator.Type.GetFunctionName()}({left}, {right})";
     }
 }

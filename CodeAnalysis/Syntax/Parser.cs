@@ -3,9 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 using Theta.CodeAnalysis.Messages;
 using Theta.CodeAnalysis;
 using Theta.CodeAnalysis.Text;
@@ -149,8 +146,24 @@ internal sealed class Parser
             SyntaxType.TrueKeyword or SyntaxType.FalseKeyword => ParseBooleanExpression(),
             SyntaxType.NullKeyword => ParseNull(),
             SyntaxType.NumberToken => ParseNumberLiteral(),
+            SyntaxType.LetKeyword or SyntaxType.ConstKeyword => ParseVariableDeclaration(),
             _ => ParseNamedExpression(),
         };
+    }
+
+    private ExpressionSyntax ParseVariableDeclaration()
+    {
+        var isConst = NextToken().Type == SyntaxType.ConstKeyword;
+        var name = MatchToken(SyntaxType.IdentifierToken);
+        var token = Peek(0);
+        SyntaxToken? equalsToken = null;
+        ExpressionSyntax? expression = null;
+        if (token.Type == SyntaxType.EqualsToken)
+        {
+            equalsToken = NextToken();
+            expression = ParseExpression();
+        }
+        return new VariableDeclarationSyntax(isConst, name, equalsToken, expression);
     }
 
     private ExpressionSyntax ParseLiteral(SyntaxType type)
@@ -174,12 +187,12 @@ internal sealed class Parser
         return new LiteralExpressionSyntax(Current.Span) { Value = null };
     }
 
-    private ExpressionSyntax ParseNamedExpression()
+    private NamedExpressionSyntax ParseNamedExpression()
     {
         var identifierToken = NextToken();
         if (identifierToken.Type != SyntaxType.IdentifierToken)
         {
-            throw new Exception($"Token type {identifierToken.Type} has undefined behaviour.");
+            Diagnostics.ReportInvalidName(identifierToken);
         }
         return new NamedExpressionSyntax(identifierToken);
     }

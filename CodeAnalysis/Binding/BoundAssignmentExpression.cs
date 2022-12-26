@@ -32,8 +32,8 @@ public sealed class BoundAssignmentExpression : BoundExpression
     }
     */
 
-    public override string Stringify(Transpiler transpiler)
+    public override string Stringify(Transpiler transpiler, int indentation = 0)
     {
-        throw new NotImplementedException();
+        return $"({Var.Name} = {transpiler.StringifyExpression(Expression)})";
     }
 }

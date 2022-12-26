@@ -215,4 +215,14 @@ public sealed class Diagnostics : IEnumerable<Diagnostic>
     {
         Report(span, $"Variable '{var} is already declared.'");
     }
+
+    internal static void ReportInvalidName(SyntaxToken? token)
+    {
+        if (token is null)
+        {
+            Report(new(0, 0), "Expected identifier.");
+            return;
+        }
+        Report(token.Span, $"Identifier {token.Text} cannot be used as it is used for {token.Type}.");
+    }
 }

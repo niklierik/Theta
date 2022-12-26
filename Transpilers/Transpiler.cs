@@ -12,6 +12,13 @@ public abstract partial class Transpiler : IDisposable
     public abstract void Dispose();
     public abstract void TranspileBlockStatement(BoundBlockStatement blockStatement, int indentation = 0);
     public abstract void TranspileExpressionStatement(BoundExpressionStatement expressionStatement, int indentation = 0);
+    public abstract string TranspileVariableDeclaration(BoundVariableDeclarationExpression boundVariableDeclarationExpression, int indentation = 0);
+
+    public virtual string GetStringOfExpression(BoundExpression? expression)
+    {
+        return StringifyExpression(expression);
+    }
+
     public void Transpile(BoundStatement statement)
     {
         TranspileStatement(statement);
@@ -34,4 +41,5 @@ public abstract partial class Transpiler : IDisposable
         }
         return expression.Stringify(this);
     }
+
 }

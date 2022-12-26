@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Theta.CodeAnalysis.Binding;
-using Theta.CodeAnalysis.Syntax.Statements;
 
 public sealed class CompilationUnitSyntax : SyntaxNode
 {

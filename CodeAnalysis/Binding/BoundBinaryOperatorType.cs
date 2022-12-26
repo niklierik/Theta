@@ -1,4 +1,8 @@
-﻿namespace Theta.CodeAnalysis.Binding;
+﻿using System.Drawing;
+using System.Reflection;
+using System;
+
+namespace Theta.CodeAnalysis.Binding;
 
 public enum BoundBinaryOperatorType
 {
@@ -19,4 +23,12 @@ public enum BoundBinaryOperatorType
     Less,
     GreaterOrEquals,
     Greater,
+}
+
+public static class BoundBinaryOperatorHelper
+{
+    public static string GetFunctionName(this BoundBinaryOperatorType op)
+    {
+        return "__" + op.ToString().ToLower() + "__";
+    }
 }

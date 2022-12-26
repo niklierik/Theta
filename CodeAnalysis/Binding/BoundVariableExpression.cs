@@ -27,7 +27,7 @@ public sealed class BoundVariableExpression : BoundExpression
     }
     */
 
-    public override string Stringify(Transpiler transpiler)
+    public override string Stringify(Transpiler transpiler, int indentation = 0)
     {
         return Variable.Name;
     }

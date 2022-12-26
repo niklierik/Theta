@@ -196,4 +196,5 @@ public enum SyntaxType
     // Statements
     ExpressionStatement,
     BlockStatement,
+    VariableDeclarationExpression,
 }

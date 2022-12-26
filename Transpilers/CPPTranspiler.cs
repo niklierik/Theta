@@ -10,8 +10,11 @@ using Theta.CodeAnalysis.Binding;
 public class CPPTranspiler : Transpiler
 {
 
-    private readonly StreamWriter header;
-    private readonly StreamWriter src;
+    private StreamWriter? header;
+    private StreamWriter? src;
+
+    public StreamWriter Header => header!;
+    public StreamWriter Source => src!;
 
     public CPPTranspiler(string header, string src)
     {
@@ -21,8 +24,12 @@ public class CPPTranspiler : Transpiler
 
     public override void Dispose()
     {
+        header?.Close();
+        src?.Close();
         header?.Dispose();
         src?.Dispose();
+        header = null;
+        src = null;
     }
 
     // private int indentationLvl = 0;
@@ -41,16 +48,28 @@ public class CPPTranspiler : Transpiler
 
     public override void TranspileBlockStatement(BoundBlockStatement boundBlockStatement, int indentation = 0)
     {
-        src.WriteLine("{");
+        Source.WriteLine("{");
         foreach (var statement in boundBlockStatement.Statements)
         {
             statement.Transpile(this, indentation + 1);
         }
-        src.WriteLine("}");
+        Source.WriteLine("}");
     }
 
     public override void TranspileExpressionStatement(BoundExpressionStatement expressionStatement, int indentation = 0)
     {
+        Source.Write(Indentation(indentation) + GetStringOfExpression(expressionStatement.Expression) + ";");
+    }
 
+    public override string TranspileVariableDeclaration(BoundVariableDeclarationExpression varDecl, int indentation = 0)
+    {
+        var var = varDecl.Variable;
+        var res = varDecl.Variable.IsConst ? "const " : "";
+        res += $"auto {var.Name}";
+        if (varDecl.EqualsTo is not null)
+        {
+            res += $" = {varDecl.EqualsTo.Stringify(this)}";
+        }
+        return res;
     }
 }

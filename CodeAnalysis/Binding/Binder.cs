@@ -120,11 +120,30 @@ public sealed class Binder
             case SyntaxType.AssignmentExpression:
                 AssignmentExpressionSyntax assignmentExpression = (AssignmentExpressionSyntax) syntax;
                 return BindAssignmentExpression(assignmentExpression);
+            case SyntaxType.VariableDeclarationExpression:
+                VariableDeclarationSyntax? varDecl = syntax as VariableDeclarationSyntax;
+                return BindVariableDeclaration(varDecl);
             default:
                 throw new Exception($"Cannot continue binding. Unexpected syntax {syntax.Type}.");
         }
     }
 
+    private BoundExpression? BindVariableDeclaration(VariableDeclarationSyntax? varDecl)
+    {
+        if (varDecl is null)
+        {
+            return null;
+        }
+        var name = varDecl.Name.Text;
+        BoundExpression? equalsTo = BindExpression(varDecl.EqualsTo);
+        VariableSymbol var = new VariableSymbol(name, equalsTo?.Type ?? typeof(object), varDecl.IsConst);
+        if (!Scope.TryDeclare(var))
+        {
+            Diagnostics.ReportVarAlreadyDeclared(name, varDecl.Span);
+            return null;
+        }
+        return new BoundVariableDeclarationExpression(varDecl.Span, var, equalsTo);
+    }
 
     private BoundExpression BindLiteralExpression(LiteralExpressionSyntax literal)
     {
@@ -193,18 +212,15 @@ public sealed class Binder
 
         if (!Scope.TryLookup(name, out var variable))
         {
-            variable = new VariableSymbol(name, expression?.Type ?? typeof(void));
+            // variable = new VariableSymbol(name, expression?.Type ?? typeof(void));
+
+            Diagnostics.ReportUndefinedName(name, assignmentExpression.Span);
+            return new BoundLiteralExpression(null, assignmentExpression.Span);
         }
         // var variable = new VariableSymbol(name, expression?.Type ?? typeof(void));
         if (!(expression?.Type ?? typeof(void)).IsAssignableFrom((variable?.Type ?? typeof(void))))
         {
             Diagnostics.ReportInvalidCast(variable, expression, assignmentExpression.Span);
-            return new BoundLiteralExpression(null, assignmentExpression.Span);
-        }
-
-        if (!Scope.TryDeclare(variable!))
-        {
-            Diagnostics.ReportVarAlreadyDeclared(name, assignmentExpression.Span);
             return new BoundLiteralExpression(null, assignmentExpression.Span);
         }
         return new BoundAssignmentExpression(variable!, expression, assignmentExpression.Span);

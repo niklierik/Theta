@@ -2,14 +2,17 @@
 
 public sealed class VariableSymbol
 {
-    public VariableSymbol(string name, Type type)
+    public VariableSymbol(string name, Type type, bool isConst)
     {
         Name = name;
         Type = type;
+        IsConst = isConst;
     }
 
     public string Name { get; }
     public Type Type { get; }
+
+    public bool IsConst { get; }
 
     public override int GetHashCode()
     {

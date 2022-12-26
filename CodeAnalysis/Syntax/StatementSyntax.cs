@@ -1,4 +1,4 @@
-﻿namespace Theta.CodeAnalysis.Syntax.Statements;
+﻿namespace Theta.CodeAnalysis.Syntax;
 
 public abstract class StatementSyntax : SyntaxNode
 {

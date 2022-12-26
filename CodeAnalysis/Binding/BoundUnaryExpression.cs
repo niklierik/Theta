@@ -18,7 +18,7 @@ public sealed class BoundUnaryExpression : BoundExpression
 
     public override Type Type => Operator.ResultType;
 
-   // public override BoundNodeType NodeType => BoundNodeType.UnaryExpression;
+    // public override BoundNodeType NodeType => BoundNodeType.UnaryExpression;
 
     public BoundExpression Operand { get; }
     public BoundUnaryOperator Operator { get; }
@@ -48,8 +48,9 @@ public sealed class BoundUnaryExpression : BoundExpression
     }
     */
 
-    public override string Stringify(Transpiler transpiler)
+    public override string Stringify(Transpiler transpiler, int indentation = 0)
     {
-        throw new NotImplementedException();
+        var operand = transpiler.StringifyExpression(Operand);
+        return $"{Operator.Type.GetFunctionName()}({operand})";
     }
 }

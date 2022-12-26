@@ -12,5 +12,5 @@ public abstract class BoundExpression : BoundNode
     public abstract TextSpan Span { get; }
 
    // public abstract object? Evaluate(Evaluator eval);
-    public abstract string Stringify(Transpiler transpiler);
+    public abstract string Stringify(Transpiler transpiler, int indentation = 0);
 }

@@ -20,7 +20,6 @@ internal static class Program
     private static bool _multiline = false;
     // private static Dictionary<VariableSymbol, object?> _vars = new();
     // private static Compilation? _prev = null;
-    private static Transpilers.Transpiler _transpiler = new CPPTranspiler("output.h", "output.cpp");
 
     private static void ConsoleSetup()
     {
@@ -38,12 +37,12 @@ internal static class Program
             {
                 _multiline = true;
             }
-           /*
-            if (arg.ToLower() == "-printtree")
-            {
-                _printTree = true;
-            }
-           */
+            /*
+             if (arg.ToLower() == "-printtree")
+             {
+                 _printTree = true;
+             }
+            */
         }
     }
 
@@ -51,9 +50,8 @@ internal static class Program
     {
         ConsoleSetup();
         ConsumeArgs(args);
-        while (true)
+        using (var transpiler = new CPPTranspiler("test.h", "test.cpp"))
         {
-
             " > ".Log(ConsoleColor.DarkGray, false);
 
             SourceText? input = SourceText.FromConsole(_multiline);
@@ -61,7 +59,7 @@ internal static class Program
             {
                 if (input.IsEmpty)
                 {
-                    continue;
+                    return;
                 }
 
                 #region Macros
@@ -75,7 +73,7 @@ internal static class Program
                     _multiline = !_multiline;
                     Console.Write("Multiline input: ");
                     _multiline.OnOff().Log(_multiline.GoodBadColor());
-                    continue;
+                    return;
                 }
                 /*
                 if (inputtxt == "#printtree()")
@@ -89,7 +87,7 @@ internal static class Program
                 if (inputtxt == "#clear()")
                 {
                     Console.Clear();
-                    continue;
+                    return;
                 }
                 /*
                 if (inputtxt == "#clearvars()")
@@ -99,25 +97,24 @@ internal static class Program
                 }
                 */
                 (input, var success) = TryOpenFile(input);
+                #endregion
                 if (success)
                 {
                     "Opening file...".Log(ConsoleColor.DarkGray);
                 }
-                #endregion
                 if (input is null)
                 {
-                    continue;
+                    return;
                 }
                 // var result = Compilation.EvalLine(input, _vars, _printTree, _prev);
-                Compilation.CompileText(input, _transpiler);
+                Compilation.CompileText(input, transpiler);
                 Diagnostics.ShowErrors();
 
                 if (Diagnostics.HasError)
                 {
                     Diagnostics.Clear();
-                    continue;
+                    return;
                 }
-                $"Transpiling was successful.".Log(ConsoleColor.Green);
 
                 // $"{eval.AsStringVersion()}".Log(ConsoleColor.DarkGray);
             }
@@ -126,6 +123,8 @@ internal static class Program
                 Diagnostics.ShowErrors();
             }
             Diagnostics.Clear();
+            transpiler.Dispose();
+            $"Transpiling was successful.".Log(ConsoleColor.Green);
         }
     }
 
@@ -142,7 +141,7 @@ internal static class Program
             var file = match.Groups["file"].Value;
             if (!file.ToLower().EndsWith(".th"))
             {
-                $"WARNING: You should only open .th files.{Environment.NewLine}{Environment.NewLine}".Log(ConsoleColor.Yellow);
+                $"WARNING: You should only open '.th' files.{Environment.NewLine}{Environment.NewLine}".Log(ConsoleColor.Yellow);
             }
             return (SourceText.FromFile(file), true);
         }
