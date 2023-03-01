@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
-using Theta.CodeAnalysis;
-using Theta.CodeAnalysis.Messages;
-using Theta.CodeAnalysis.Syntax;
+using Theta.Language;
+using Theta.Language.Messages;
+using Theta.Language.Syntax;
 
 namespace Theta.Tests.CodeAnalysis;
 

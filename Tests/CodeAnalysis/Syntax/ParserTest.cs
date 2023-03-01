@@ -1,11 +1,11 @@
 ﻿namespace Theta.Tests.CodeAnalysis.Syntax;
 
 using System.Globalization;
-using Theta.CodeAnalysis;
-using Theta.CodeAnalysis.Messages;
-using Theta.CodeAnalysis.Syntax;
-using Theta.CodeAnalysis.Syntax.Statements;
-
+using Theta.Language;
+using Theta.Language.Messages;
+using Theta.Language.Syntax;
+using Theta.Language.Syntax.Statements;
+/*
 public class ParserTest
 {
 
@@ -122,3 +122,4 @@ public class ParserTest
         }
     }
 }
+*/

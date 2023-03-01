@@ -1,8 +1,8 @@
 using System.Globalization;
-using Theta.CodeAnalysis;
-using Theta.CodeAnalysis.Syntax;
+using Theta.Language;
+using Theta.Language.Syntax;
 using System.Linq;
-using Theta.CodeAnalysis.Messages;
+using Theta.Language.Messages;
 
 namespace Theta.Tests.CodeAnalysis.Syntax;
 

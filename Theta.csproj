@@ -17,7 +17,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="CodeAnalysis\Messages\TextSpan.cs~RF12201832.TMP" />
+    <None Remove="Language\Messages\TextSpan.cs~RF12201832.TMP" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
   </ItemGroup>
 
 </Project>

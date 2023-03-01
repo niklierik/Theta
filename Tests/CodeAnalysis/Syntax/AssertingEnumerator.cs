@@ -1,6 +1,6 @@
 ﻿namespace Theta.Tests.CodeAnalysis.Syntax;
 using System;
-using Theta.CodeAnalysis.Syntax;
+using Theta.Language.Syntax;
 
 public sealed class AssertingEnumerator : IDisposable
 {
